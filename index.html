@@ -638,10 +638,13 @@
 
       .code-input-content {
         width: 90%;
-        max-width: 1200px;
-        height: 80vh;
+        max-width: 600px;
+        height: auto;
+        max-height: 80vh;
         display: flex;
         flex-direction: column;
+        padding: 20px;
+        box-sizing: border-box;
       }
 
       .code-input {
@@ -661,74 +664,98 @@
       }
 
       .burger-menu {
-        display: inline-block;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-around;
+        width: 44px;
+        height: 44px;
+        background: transparent;
+        border: none;
         cursor: pointer;
+        padding: 0;
         position: absolute;
         right: 20px;
         top: 15px;
+        z-index: 1001;
       }
 
-      .bar1, .bar2, .bar3 {
-        width: 35px;
-        height: 5px;
+      .burger-menu:focus {
+        outline: none;
+      }
+
+      .burger-menu span {
+        width: 30px;
+        height: 4px;
         background-color: var(--foreground);
-        margin: 6px 0;
-        transition: 0.4s;
-      }
-
-      .change .bar1 {
-        transform: rotate(-45deg) translate(-9px, 6px);
-      }
-
-      .change .bar2 {opacity: 0;}
-
-      .change .bar3 {
-        transform: rotate(45deg) translate(-8px, -8px);
+        transition: all 0.3s linear;
+        position: relative;
       }
 
       .side-menu {
-        height: 100%;
-        width: 0;
         position: fixed;
-        z-index: 1;
-        top: 0;
-        right: 0;
+        top: 60px;
+        right: -250px;
+        width: 250px;
+        height: auto;
+        max-height: calc(100vh - 60px);
         background-color: var(--background);
-        overflow-x: hidden;
-        transition: 0.5s;
-        padding-top: 60px;
+        transition: right 0.3s ease-in-out;
+        z-index: 1000;
+        box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
+        overflow-y: auto;
+      }
+
+      .side-menu.open {
+        right: 0;
       }
 
       .side-menu a {
-        padding: 8px 8px 8px 32px;
-        text-decoration: none;
-        font-size: 25px;
-        color: var(--foreground);
         display: block;
-        transition: 0.3s;
+        padding: 15px 20px;
+        color: var(--foreground);
+        text-decoration: none;
+        transition: background-color 0.3s;
       }
 
       .side-menu a:hover {
-        color: var(--primary);
+        background-color: rgba(255, 255, 255, 0.1);
       }
 
       #diyCompileInput {
         width: 100%;
         height: 300px;
-        margin-bottom: 10px;
+        margin-bottom: 20px;
         font-family: monospace;
         font-size: 14px;
+        resize: vertical;
+      }
+
+      .compile-button {
+        align-self: flex-end;
+        padding: 10px 20px;
+        background-color: var(--primary);
+        color: #ffffff;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 1rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+      }
+
+      .compile-button:hover {
+        background-color: #2563eb;
       }
     </style>
 </head>
 <body>
     <div class="title-banner">
       <h1 class="title">DevBot v0.1.1 [MINIMA]</h1>
-      <div class="burger-menu" onclick="toggleMenu()">
-        <div class="bar1"></div>
-        <div class="bar2"></div>
-        <div class="bar3"></div>
-      </div>
+      <button id="burger-button" class="burger-menu" onclick="toggleMenu()" aria-label="Toggle menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
     </div>
 
     <div class="side-menu" id="sideMenu">
@@ -813,11 +840,11 @@
 
     <!-- DIY Compile Modal -->
     <div id="diyCompileModal" class="modal">
-      <div class="modal-content">
+      <div class="modal-content code-input-content">
         <span class="close" onclick="closeDIYCompileModal()">&times;</span>
         <h2>DIY Compile</h2>
         <textarea id="diyCompileInput" placeholder="Enter your code here..."></textarea>
-        <button onclick="compileDIYCode()">Compile</button>
+        <button onclick="compileDIYCode()" class="compile-button">Compile MiniDapp</button>
       </div>
     </div>
 
@@ -2153,10 +2180,18 @@ function _recurseUploadMDS(thefullfile, chunk, callback){
       }
 
       function toggleMenu() {
-        document.querySelector(".burger-menu").classList.toggle("change");
-        const sideMenu = document.getElementById("sideMenu");
-        sideMenu.style.width = sideMenu.style.width === "250px" ? "0" : "250px";
+        document.getElementById('sideMenu').classList.toggle('open');
       }
+
+      // Close menu when clicking outside
+      document.addEventListener('click', function(event) {
+        const sideMenu = document.getElementById('sideMenu');
+        const burgerButton = document.getElementById('burger-button');
+        
+        if (!sideMenu.contains(event.target) && !burgerButton.contains(event.target)) {
+          sideMenu.classList.remove('open');
+        }
+      });
 
       function showSettings() {
         // Placeholder for settings functionality
@@ -2167,13 +2202,14 @@ function _recurseUploadMDS(thefullfile, chunk, callback){
         document.getElementById("diyCompileModal").style.display = "block";
       }
 
-      function closeDIYCompileModal() {
-        document.getElementById("diyCompileModal").style.display = "none";
-      }
-
       function compileDIYCode() {
         const code = document.getElementById("diyCompileInput").value;
+        closeDIYCompileModal();
         compileMiniDapp(code);
+      }
+
+      function closeDIYCompileModal() {
+        document.getElementById("diyCompileModal").style.display = "none";
       }
     </script>
 </body>
