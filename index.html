@@ -659,18 +659,85 @@
         overflow-y: auto;
         margin-top: 10px;
       }
+
+      .burger-menu {
+        display: inline-block;
+        cursor: pointer;
+        position: absolute;
+        right: 20px;
+        top: 15px;
+      }
+
+      .bar1, .bar2, .bar3 {
+        width: 35px;
+        height: 5px;
+        background-color: var(--foreground);
+        margin: 6px 0;
+        transition: 0.4s;
+      }
+
+      .change .bar1 {
+        transform: rotate(-45deg) translate(-9px, 6px);
+      }
+
+      .change .bar2 {opacity: 0;}
+
+      .change .bar3 {
+        transform: rotate(45deg) translate(-8px, -8px);
+      }
+
+      .side-menu {
+        height: 100%;
+        width: 0;
+        position: fixed;
+        z-index: 1;
+        top: 0;
+        right: 0;
+        background-color: var(--background);
+        overflow-x: hidden;
+        transition: 0.5s;
+        padding-top: 60px;
+      }
+
+      .side-menu a {
+        padding: 8px 8px 8px 32px;
+        text-decoration: none;
+        font-size: 25px;
+        color: var(--foreground);
+        display: block;
+        transition: 0.3s;
+      }
+
+      .side-menu a:hover {
+        color: var(--primary);
+      }
+
+      #diyCompileInput {
+        width: 100%;
+        height: 300px;
+        margin-bottom: 10px;
+        font-family: monospace;
+        font-size: 14px;
+      }
     </style>
 </head>
 <body>
     <div class="title-banner">
       <h1 class="title">DevBot v0.1.1 [MINIMA]</h1>
-      <div class="top-buttons">
-        <button class="donate-button" onclick="openDonateModal()">Donate</button>
-        <button class="about-button" onclick="showAbout()">About</button>
-        <button class="index-button" onclick="showCodeModal('index.html')">index.html</button>
-        <button class="index-button" onclick="showCodeModal('service.js')">service.js</button>
+      <div class="burger-menu" onclick="toggleMenu()">
+        <div class="bar1"></div>
+        <div class="bar2"></div>
+        <div class="bar3"></div>
       </div>
     </div>
+
+    <div class="side-menu" id="sideMenu">
+      <a href="#" onclick="showAbout()">About</a>
+      <a href="#" onclick="openDonateModal()">Donate</a>
+      <a href="#" onclick="showSettings()">Settings</a>
+      <a href="#" onclick="showDIYCompile()">DIY Compile</a>
+    </div>
+
     <div class="chat-container" id="chat-body">
       <!-- Messages will be inserted here by JavaScript -->
     </div>
@@ -744,14 +811,13 @@
 
     <div id="notification" class="notification"></div>
 
-    <!-- Add this new modal for code input -->
-    <div id="codeModal" class="modal">
-      <div class="modal-content code-input-content">
-        <span class="close" onclick="closeCodeModal()">&times;</span>
-        <h2 id="codeModalTitle">Enter Code</h2>
-        <textarea id="codeInput" class="code-input" placeholder="Paste your code here..."></textarea>
-        <button onclick="formatCode()">Format Code</button>
-        <pre><code class="language-html" id="formattedCode"></code></pre>
+    <!-- DIY Compile Modal -->
+    <div id="diyCompileModal" class="modal">
+      <div class="modal-content">
+        <span class="close" onclick="closeDIYCompileModal()">&times;</span>
+        <h2>DIY Compile</h2>
+        <textarea id="diyCompileInput" placeholder="Enter your code here..."></textarea>
+        <button onclick="compileDIYCode()">Compile</button>
       </div>
     </div>
 
@@ -2081,29 +2147,33 @@ function _recurseUploadMDS(thefullfile, chunk, callback){
         if (event.target == document.getElementById("compile-modal")) {
           document.getElementById("compile-modal").style.display = "none";
         }
-        if (event.target == document.getElementById("codeModal")) {
-          closeCodeModal();
+        if (event.target == document.getElementById("diyCompileModal")) {
+          closeDIYCompileModal();
         }
       }
 
-      function showCodeModal(fileType) {
-        const modal = document.getElementById('codeModal');
-        const title = document.getElementById('codeModalTitle');
-        title.textContent = `Enter ${fileType} Code`;
-        document.getElementById('codeInput').value = '';
-        document.getElementById('formattedCode').textContent = '';
-        modal.style.display = "block";
+      function toggleMenu() {
+        document.querySelector(".burger-menu").classList.toggle("change");
+        const sideMenu = document.getElementById("sideMenu");
+        sideMenu.style.width = sideMenu.style.width === "250px" ? "0" : "250px";
       }
 
-      function closeCodeModal() {
-        document.getElementById('codeModal').style.display = "none";
+      function showSettings() {
+        // Placeholder for settings functionality
+        alert("Settings functionality coming soon!");
       }
 
-      function formatCode() {
-        const input = document.getElementById('codeInput').value;
-        const formattedElement = document.getElementById('formattedCode');
-        formattedElement.textContent = input;
-        Prism.highlightElement(formattedElement);
+      function showDIYCompile() {
+        document.getElementById("diyCompileModal").style.display = "block";
+      }
+
+      function closeDIYCompileModal() {
+        document.getElementById("diyCompileModal").style.display = "none";
+      }
+
+      function compileDIYCode() {
+        const code = document.getElementById("diyCompileInput").value;
+        compileMiniDapp(code);
       }
     </script>
 </body>
