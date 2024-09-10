@@ -50,7 +50,6 @@
         background: linear-gradient(to bottom, rgba(15, 23, 42, 0.8) 0%, rgba(15, 23, 42, 0) 100%);
         text-align: center;
         z-index: 1000;
-        pointer-events: none;
       }
 
       .title {
@@ -463,12 +462,147 @@
       .download-link:hover {
         background-color: #059669;
       }
+
+      .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0,0,0,0.4);
+      }
+
+      .modal-content {
+        background-color: var(--background);
+        margin: 15% auto;
+        padding: 20px;
+        border: 1px solid var(--secondary);
+        width: 80%;
+        max-width: 500px;
+      }
+
+      .close {
+        color: var(--secondary);
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+      }
+
+      .close:hover,
+      .close:focus {
+        color: var(--primary);
+        text-decoration: none;
+        cursor: pointer;
+      }
+
+      #compile-form {
+        display: flex;
+        flex-direction: column;
+      }
+
+      #compile-form label {
+        margin-top: 10px;
+      }
+
+      #compile-form input {
+        margin-bottom: 10px;
+        padding: 5px;
+        border: 1px solid var(--secondary);
+        background-color: var(--background);
+        color: var(--foreground);
+      }
+
+      #compile-form button {
+        margin-top: 20px;
+        padding: 10px;
+        background-color: var(--primary);
+        color: var(--foreground);
+        border: none;
+        cursor: pointer;
+      }
+
+      #compile-form button:hover {
+        background-color: var(--secondary);
+      }
+
+      .top-buttons {
+        position: absolute;
+        top: 10px;
+        left: 20px;
+        right: 20px;
+        display: flex;
+        justify-content: space-between;
+      }
+
+      .donate-button, .about-button {
+        padding: 8px 16px;
+        background-color: var(--secondary);
+        color: var(--foreground);
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 0.9rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+      }
+
+      .donate-button:hover, .about-button:hover {
+        background-color: #475569;
+      }
+
+      #donateModal {
+        display: none;
+        position: fixed;
+        z-index: 1001;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0,0,0,0.4);
+      }
+
+      .donate-modal-content {
+        background-color: var(--background);
+        margin: 15% auto;
+        padding: 20px;
+        border: 1px solid var(--secondary);
+        width: 80%;
+        max-width: 400px;
+        border-radius: 12px;
+      }
+
+      .donate-modal-content h2 {
+        color: var(--foreground);
+        margin-bottom: 20px;
+      }
+
+      .donate-modal-content button {
+        margin: 5px;
+        padding: 10px;
+        background-color: var(--primary);
+        color: var(--foreground);
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+
+      .donate-modal-content button:hover {
+        background-color: #2563eb;
+      }
     </style>
 </head>
 <body>
     <div class="title-banner">
       <h1 class="title">DevBot v0.1.1 [MINIMA]</h1>
-      <button class="about-button" onclick="showAbout()">About</button>
+      <div class="top-buttons">
+        <button class="donate-button" onclick="openDonateModal()">Donate</button>
+        <button class="about-button" onclick="showAbout()">About</button>
+      </div>
     </div>
     <div class="chat-container" id="chat-body">
       <!-- Messages will be inserted here by JavaScript -->
@@ -483,7 +617,7 @@
         ></textarea>
         <button class="send-button" onclick="sendMessage()">Send</button>
         <div class="custom-placeholder" id="custom-placeholder">
-          Type your question here... [cost is <span class="strikethrough">M</span>5]
+          Type your question here...
         </div>
       </div>
     </div>
@@ -495,17 +629,46 @@
         <p>MiniDevBot is your AI-powered development assistant on the Minima blockchain.</p>
         <h3>How it works:</h3>
         <ul>
-          <li>Each question costs 5 Minima, automatically deducted from your wallet.</li>
-          <li>To ask a question, simply type and hit send - payment is handled automatically.</li>
-          <li>If you find a response particularly helpful, you can tip additional Minima.</li>
+          <li>This bot is free to use - but each query costs around $0.12 to run - consider donating to keep the service running.</li>
+          <li>You can ask almost anything... at the moment it struggles with the building of entire complex minidapps, but finds simple minidapps pretty easy.</li>
+          <li>You can also ask it to compile your minidapp and download it (this only works when its given you an entire index.html file).</li>
         </ul>
         <h3>Tips for best results:</h3>
         <ul>
-          <li>Be specific in your questions for more accurate answers.</li>
+          <li>If you want a plan, ask for a plan, if you want a full minidapp, ask for a full minidapp.</li>
           <li>Use code snippets when discussing specific code issues.</li>
           <li>Mark follow-up questions to maintain context in the conversation.</li>
         </ul>
         <p>Happy coding with MiniDevBot!</p>
+      </div>
+    </div>
+
+    <div id="compile-modal" class="modal">
+      <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2>Compile and Download MiniDapp</h2>
+        <form id="compile-form">
+          <label for="dapp-name">MiniDapp Name:</label>
+          <input type="text" id="dapp-name" required>
+          <label for="dapp-description">Description:</label>
+          <input type="text" id="dapp-description">
+          <label for="dapp-version">Version:</label>
+          <input type="text" id="dapp-version" value="0.1.0">
+          <button type="submit">Compile and Download</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Donate Modal -->
+    <div id="donateModal">
+      <div class="donate-modal-content">
+        <h2>Choose Donation Amount</h2>
+        <button onclick="donate(10)">10 Minima</button>
+        <button onclick="donate(20)">20 Minima</button>
+        <button onclick="donate(50)">50 Minima</button>
+        <button onclick="donate(100)">100 Minima</button>
+        <button onclick="donate(1000)">1000 Minima</button>
+        <button onclick="closeDonateModal()">Cancel</button>
       </div>
     </div>
 
@@ -695,7 +858,7 @@ var MDS = {
 			var commsline = dappname+"&response&"+id+"&"+data;		
 			
 			//Send via POST
-			httpPostAsync("api", commsline, callback);
+			httpPostAsync("api", commsline, callback);	
 		} 	
 	},
 	
@@ -1435,19 +1598,6 @@ function _recurseUploadMDS(thefullfile, chunk, callback){
         document.getElementById("loading-message").style.display = "block";
 
         try {
-          // Charge 5 Minima before sending the message
-          const res = await new Promise((resolve) => {
-            MDS.cmd(
-              "send address:MxG081C1476BJCHSQFF7K7ACMR4G111JMPCYEED3E4TFB02NA3D4TF4KEVGWH32 amount:5",
-              resolve
-            );
-          });
-
-          if (!res.status) {
-            alert("Payment failed. Please try again.");
-            return;
-          }
-
           const response = await fetch(
             "https://devbot-api-production.up.railway.app/chat",
             {
@@ -1645,16 +1795,39 @@ function _recurseUploadMDS(thefullfile, chunk, callback){
       }
 
       function compileMiniDapp(codeContent) {
-        // Prompt the user for a MiniDapp name
-        const dappName = prompt("Enter a name for your MiniDapp:", "MyMiniDapp_" + Date.now());
-        
-        if (!dappName) {
-          alert("MiniDapp compilation cancelled.");
-          return;
+        const modal = document.getElementById('compile-modal');
+        const span = modal.querySelector('.close');
+        const form = document.getElementById('compile-form');
+        const nameInput = document.getElementById('dapp-name');
+
+        // Set a default name with timestamp
+        nameInput.value = "MyMiniDapp_" + Date.now();
+
+        modal.style.display = "block";
+
+        span.onclick = function() {
+          modal.style.display = "none";
         }
 
-        // Create a basic HTML structure with the code content
-        const htmlContent = `
+        window.onclick = function(event) {
+          if (event.target == modal) {
+            modal.style.display = "none";
+          }
+        }
+
+        form.onsubmit = function(e) {
+          e.preventDefault();
+          const dappName = nameInput.value;
+          const dappDescription = document.getElementById('dapp-description').value;
+          const dappVersion = document.getElementById('dapp-version').value;
+
+          modal.style.display = "none";
+
+          // Sanitize the name for the file name
+          const sanitizedName = dappName.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+
+          // Create a basic HTML structure with the code content
+          const htmlContent = `
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1677,88 +1850,123 @@ function _recurseUploadMDS(thefullfile, chunk, callback){
 </html>
 `;
 
-        // Update dapp.conf content with the new name
-        const dappConfContent = {
-          name: dappName,
-          icon: "brain.png",
-          version: "0.1.0",
-          description: "Generated MiniDapp",
-          browser: "internal"
-        };
+          // Update dapp.conf content with the form inputs
+          const dappConfContent = {
+            name: dappName,
+            icon: "brain.png",
+            version: dappVersion,
+            description: dappDescription || "Generated MiniDapp",
+            browser: "internal"
+          };
 
-        createMiniDapp(htmlContent, dappConfContent, dappName);
-      }
-
-      function createMiniDapp(htmlContent, dappConfContent, dappName) {
-        const zip = new JSZip();
-
-        // Add index.html
-        zip.file("index.html", htmlContent);
-
-        // Add mds.js content
-        const mdsJsContent = document.getElementById('mdsJsContent').textContent;
-        zip.file("mds.js", mdsJsContent);
-
-        // Add updated dapp.conf content
-        zip.file("dapp.conf", JSON.stringify(dappConfContent, null, 2));
-
-        // Generate and save zip
-        generateAndSaveZip(zip, dappName);
-      }
-
-      function generateAndSaveZip(zip, dappName) {
-        zip.generateAsync({type:"base64"})
-        .then(function(content) {
-          const fileName = `${dappName}.zip`;
-          MDS.file.save(fileName, content, function(saveResp) {
-            if (saveResp.status) {
-              alert("MiniDapp created and saved as " + fileName);
-              createDownloadLink(fileName);
-            } else {
-              alert("Error saving the MiniDapp: " + saveResp.error);
-            }
-          });
-        });
-      }
-
-      // Update createDownloadLink function to use the custom dappName
-      function createDownloadLink(fileName) {
-        MDS.file.load(fileName, function(loadResp) {
-          if (loadResp.status) {
-            const base64Content = loadResp.response.load.data;
-            const blob = base64ToBlob(base64Content, 'application/zip');
-            const url = URL.createObjectURL(blob);
-            
-            const downloadLink = document.createElement('a');
-            downloadLink.href = url;
-            downloadLink.download = fileName;
-            downloadLink.textContent = `Download ${fileName}`;
-            downloadLink.className = 'download-link';
-            
-            // Append the download link to the chat body
-            const chatBody = document.getElementById('chat-body');
-            chatBody.insertBefore(downloadLink, chatBody.firstChild);
-          } else {
-            console.error("Error loading file for download: " + loadResp.error);
-          }
-        });
-      }
-
-      function base64ToBlob(base64, mimeType) {
-        const byteCharacters = atob(base64);
-        const byteArrays = [];
-
-        for (let offset = 0; offset < byteCharacters.length; offset += 512) {
-          const slice = byteCharacters.slice(offset, offset + 512);
-          const byteNumbers = new Array(slice.length);
-          for (let i = 0; i < slice.length; i++) {
-            byteNumbers[i] = slice.charCodeAt(i);
-          }
-          const byteArray = new Uint8Array(byteNumbers);
-          byteArrays.push(byteArray);
+          createAndInstallMiniDapp(htmlContent, dappConfContent, sanitizedName);
         }
+      }
 
-        return new Blob(byteArrays, {type: mimeType});
+      function createAndInstallMiniDapp(htmlContent, dappConfContent, sanitizedName) {
+    const zip = new JSZip();
+
+    // Add files to the zip
+    zip.file("index.html", htmlContent);
+    zip.file("dapp.conf", JSON.stringify(dappConfContent, null, 2));
+    
+    // Add mds.js content
+    const mdsJsContent = document.getElementById('mdsJsContent').textContent;
+    zip.file("mds.js", mdsJsContent);
+
+    // Generate zip
+    zip.generateAsync({type:"blob"})
+    .then(function(content) {
+        // Convert blob to ArrayBuffer
+        const reader = new FileReader();
+        reader.readAsArrayBuffer(content);
+        reader.onloadend = function() {
+            const arrayBuffer = reader.result;
+            const hexString = Array.from(new Uint8Array(arrayBuffer))
+                .map(b => b.toString(16).padStart(2, "0"))
+                .join("");
+            console.log("Hex zip size:", hexString.length);
+            installMiniDapp(hexString, sanitizedName);
+        }
+    });
+}
+
+function installMiniDapp(hexZipContent, dappName) {
+    // First, save the zip file to the MiniDapp's file system
+    MDS.file.savebinary(dappName + ".mds.zip", hexZipContent, function(resp) {
+        if (resp.status) {
+            console.log("Zip file saved successfully");
+            
+            // Get the path of the saved zip file
+            MDS.file.getpath(dappName + ".mds.zip", function(pathResp) {
+                if (pathResp.status) {
+                    console.log("getpath response:", JSON.stringify(pathResp.response));
+                    
+                    // Extract the path from the response
+                    const filePath = pathResp.response.getpath.path;
+                    
+                    // Now we can use the file path to install the MiniDapp
+                    const installCommand = "mds action:install file:" + filePath;
+                    console.log("Install command:", installCommand);
+                    
+                    MDS.cmd(installCommand, function(installResp) {
+                        console.log("Install response:", JSON.stringify(installResp));
+                        if (installResp.status) {
+                            alert("MiniDapp installed successfully!");
+                            // Optionally, delete the temporary zip file
+                            MDS.file.delete(dappName + ".mds.zip", function(deleteResp) {
+                                if (deleteResp.status) {
+                                    console.log("Temporary zip file deleted");
+                                }
+                            });
+                        } else {
+                            alert("Failed to install MiniDapp: " + installResp.error);
+                        }
+                    });
+                } else {
+                    alert("Failed to get file path: " + pathResp.error);
+                }
+            });
+        } else {
+            alert("Failed to save zip file: " + resp.error);
+        }
+    });
+}
+
+      function openDonateModal() {
+        document.getElementById("donateModal").style.display = "block";
+      }
+
+      function closeDonateModal() {
+        document.getElementById("donateModal").style.display = "none";
+      }
+
+      function donate(amount) {
+        const address = "MxG0814S8TAB4D57Y0Z6V8BUEW0YP3AN6G127VNPC8CKY72B6UMU1Y3C205ZE2P";
+        
+        MDS.cmd(`send amount:${amount} address:${address}`, function(res) {
+          if (res.status) {
+            alert(`Thank you for your donation of ${amount} Minima!`);
+          } else if (res.pending) {
+            alert("Transaction is pending. Please check your notifications to approve.");
+          } else {
+            alert("Transaction failed. Please try again.");
+          }
+          closeDonateModal();
+        });
+      }
+
+      // Close modal when clicking outside
+      window.onclick = function(event) {
+        if (event.target == document.getElementById("donateModal")) {
+          closeDonateModal();
+        }
+        if (event.target == document.getElementById("info-modal")) {
+          document.getElementById("info-modal").style.display = "none";
+        }
+        if (event.target == document.getElementById("compile-modal")) {
+          document.getElementById("compile-modal").style.display = "none";
+        }
       }
     </script>
 </body>
