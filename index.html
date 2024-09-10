@@ -619,6 +619,46 @@
       .notification.show {
         opacity: 1;
       }
+
+      .index-button {
+        padding: 8px 16px;
+        background-color: var(--secondary);
+        color: var(--foreground);
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 0.9rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+      }
+
+      .index-button:hover {
+        background-color: #475569;
+      }
+
+      .code-input-content {
+        width: 90%;
+        max-width: 1200px;
+        height: 80vh;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .code-input {
+        width: 100%;
+        height: 300px;
+        margin-bottom: 10px;
+        font-family: monospace;
+        font-size: 14px;
+        resize: vertical;
+      }
+
+      #formattedCode {
+        width: 100%;
+        height: 100%;
+        overflow-y: auto;
+        margin-top: 10px;
+      }
     </style>
 </head>
 <body>
@@ -627,6 +667,8 @@
       <div class="top-buttons">
         <button class="donate-button" onclick="openDonateModal()">Donate</button>
         <button class="about-button" onclick="showAbout()">About</button>
+        <button class="index-button" onclick="showCodeModal('index.html')">index.html</button>
+        <button class="index-button" onclick="showCodeModal('service.js')">service.js</button>
       </div>
     </div>
     <div class="chat-container" id="chat-body">
@@ -701,6 +743,17 @@
     </div>
 
     <div id="notification" class="notification"></div>
+
+    <!-- Add this new modal for code input -->
+    <div id="codeModal" class="modal">
+      <div class="modal-content code-input-content">
+        <span class="close" onclick="closeCodeModal()">&times;</span>
+        <h2 id="codeModalTitle">Enter Code</h2>
+        <textarea id="codeInput" class="code-input" placeholder="Paste your code here..."></textarea>
+        <button onclick="formatCode()">Format Code</button>
+        <pre><code class="language-html" id="formattedCode"></code></pre>
+      </div>
+    </div>
 
     <script type="text/plain" id="mdsJsContent">
 
@@ -2028,6 +2081,29 @@ function _recurseUploadMDS(thefullfile, chunk, callback){
         if (event.target == document.getElementById("compile-modal")) {
           document.getElementById("compile-modal").style.display = "none";
         }
+        if (event.target == document.getElementById("codeModal")) {
+          closeCodeModal();
+        }
+      }
+
+      function showCodeModal(fileType) {
+        const modal = document.getElementById('codeModal');
+        const title = document.getElementById('codeModalTitle');
+        title.textContent = `Enter ${fileType} Code`;
+        document.getElementById('codeInput').value = '';
+        document.getElementById('formattedCode').textContent = '';
+        modal.style.display = "block";
+      }
+
+      function closeCodeModal() {
+        document.getElementById('codeModal').style.display = "none";
+      }
+
+      function formatCode() {
+        const input = document.getElementById('codeInput').value;
+        const formattedElement = document.getElementById('formattedCode');
+        formattedElement.textContent = input;
+        Prism.highlightElement(formattedElement);
       }
     </script>
 </body>
