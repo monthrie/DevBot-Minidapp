@@ -594,6 +594,31 @@
       .donate-modal-content button:hover {
         background-color: #2563eb;
       }
+
+      .notification {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 15px 20px;
+        border-radius: 4px;
+        color: white;
+        font-weight: bold;
+        opacity: 0;
+        transition: opacity 0.5s ease-in-out;
+        z-index: 1000;
+      }
+
+      .notification.success {
+        background-color: var(--success);
+      }
+
+      .notification.error {
+        background-color: var(--error);
+      }
+
+      .notification.show {
+        opacity: 1;
+      }
     </style>
 </head>
 <body>
@@ -646,7 +671,7 @@
     <div id="compile-modal" class="modal">
       <div class="modal-content">
         <span class="close">&times;</span>
-        <h2>Compile and Download MiniDapp</h2>
+        <h2>Compile MiniDapp</h2>
         <form id="compile-form">
           <label for="dapp-name">MiniDapp Name:</label>
           <input type="text" id="dapp-name" required>
@@ -654,7 +679,10 @@
           <input type="text" id="dapp-description">
           <label for="dapp-version">Version:</label>
           <input type="text" id="dapp-version" value="0.1.0">
-          <button type="submit">Compile and Download</button>
+          <div class="button-container">
+            <button type="button" id="direct-install">Direct Install</button>
+            <button type="button" id="download-boilerplate">Download Boilerplate</button>
+          </div>
         </form>
       </div>
     </div>
@@ -671,6 +699,8 @@
         <button onclick="closeDonateModal()">Cancel</button>
       </div>
     </div>
+
+    <div id="notification" class="notification"></div>
 
     <script type="text/plain" id="mdsJsContent">
 
@@ -1799,6 +1829,8 @@ function _recurseUploadMDS(thefullfile, chunk, callback){
         const span = modal.querySelector('.close');
         const form = document.getElementById('compile-form');
         const nameInput = document.getElementById('dapp-name');
+        const directInstallBtn = document.getElementById('direct-install');
+        const downloadBoilerplateBtn = document.getElementById('download-boilerplate');
 
         // Set a default name with timestamp
         nameInput.value = "MyMiniDapp_" + Date.now();
@@ -1815,19 +1847,69 @@ function _recurseUploadMDS(thefullfile, chunk, callback){
           }
         }
 
-        form.onsubmit = function(e) {
-          e.preventDefault();
-          const dappName = nameInput.value;
-          const dappDescription = document.getElementById('dapp-description').value;
-          const dappVersion = document.getElementById('dapp-version').value;
-
+        directInstallBtn.onclick = function() {
+          const dappDetails = getDappDetails();
+          createAndInstallMiniDapp(codeContent, dappDetails);
           modal.style.display = "none";
+        }
 
-          // Sanitize the name for the file name
-          const sanitizedName = dappName.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+        downloadBoilerplateBtn.onclick = function() {
+          const dappDetails = getDappDetails();
+          createAndDownloadMiniDapp(codeContent, dappDetails);
+          modal.style.display = "none";
+        }
+      }
 
-          // Create a basic HTML structure with the code content
-          const htmlContent = `
+      function getDappDetails() {
+        return {
+          name: document.getElementById('dapp-name').value,
+          description: document.getElementById('dapp-description').value,
+          version: document.getElementById('dapp-version').value
+        };
+      }
+
+      function createAndInstallMiniDapp(codeContent, dappDetails) {
+        const htmlContent = generateHtmlContent(codeContent, dappDetails.name);
+        const dappConfContent = generateDappConf(dappDetails);
+        const sanitizedName = sanitizeName(dappDetails.name);
+
+        const zip = new JSZip();
+        addFilesToZip(zip, htmlContent, dappConfContent, sanitizedName);
+
+        zip.generateAsync({type:"blob"})
+          .then(function(content) {
+            const reader = new FileReader();
+            reader.readAsArrayBuffer(content);
+            reader.onloadend = function() {
+              const arrayBuffer = reader.result;
+              const hexString = arrayBufferToHexString(arrayBuffer);
+              installMiniDapp(hexString, sanitizedName);
+            }
+          });
+      }
+
+      function createAndDownloadMiniDapp(codeContent, dappDetails) {
+        const htmlContent = generateHtmlContent(codeContent, dappDetails.name);
+        const dappConfContent = generateDappConf(dappDetails);
+        const sanitizedName = sanitizeName(dappDetails.name);
+
+        const zip = new JSZip();
+        addFilesToZip(zip, htmlContent, dappConfContent, sanitizedName);
+
+        zip.generateAsync({type:"blob"})
+          .then(function(content) {
+            const url = URL.createObjectURL(content);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = sanitizedName + ".zip";
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+          });
+      }
+
+      function generateHtmlContent(codeContent, dappName) {
+        return `
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1839,7 +1921,6 @@ function _recurseUploadMDS(thefullfile, chunk, callback){
 <body>
     <pre><code>${codeContent}</code></pre>
     <script>
-        // Initialize MDS
         MDS.init(function(msg) {
             if (msg.event === "inited") {
                 console.log("MDS initialized");
@@ -1849,89 +1930,69 @@ function _recurseUploadMDS(thefullfile, chunk, callback){
 </body>
 </html>
 `;
-
-          // Update dapp.conf content with the form inputs
-          const dappConfContent = {
-            name: dappName,
-            icon: "brain.png",
-            version: dappVersion,
-            description: dappDescription || "Generated MiniDapp",
-            browser: "internal"
-          };
-
-          createAndInstallMiniDapp(htmlContent, dappConfContent, sanitizedName);
-        }
       }
 
-      function createAndInstallMiniDapp(htmlContent, dappConfContent, sanitizedName) {
-    const zip = new JSZip();
+      function generateDappConf(dappDetails) {
+        return {
+          name: dappDetails.name,
+          icon: "brain.png",
+          version: dappDetails.version,
+          description: dappDetails.description || "Generated MiniDapp",
+          browser: "internal"
+        };
+      }
 
-    // Add files to the zip
-    zip.file("index.html", htmlContent);
-    zip.file("dapp.conf", JSON.stringify(dappConfContent, null, 2));
-    
-    // Add mds.js content
-    const mdsJsContent = document.getElementById('mdsJsContent').textContent;
-    zip.file("mds.js", mdsJsContent);
+      function sanitizeName(name) {
+        return name.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+      }
 
-    // Generate zip
-    zip.generateAsync({type:"blob"})
-    .then(function(content) {
-        // Convert blob to ArrayBuffer
-        const reader = new FileReader();
-        reader.readAsArrayBuffer(content);
-        reader.onloadend = function() {
-            const arrayBuffer = reader.result;
-            const hexString = Array.from(new Uint8Array(arrayBuffer))
-                .map(b => b.toString(16).padStart(2, "0"))
-                .join("");
-            console.log("Hex zip size:", hexString.length);
-            installMiniDapp(hexString, sanitizedName);
-        }
-    });
-}
+      function addFilesToZip(zip, htmlContent, dappConfContent, sanitizedName) {
+        zip.file("index.html", htmlContent);
+        zip.file("dapp.conf", JSON.stringify(dappConfContent, null, 2));
+        const mdsJsContent = document.getElementById('mdsJsContent').textContent;
+        zip.file("mds.js", mdsJsContent);
+      }
 
-function installMiniDapp(hexZipContent, dappName) {
-    // First, save the zip file to the MiniDapp's file system
-    MDS.file.savebinary(dappName + ".mds.zip", hexZipContent, function(resp) {
-        if (resp.status) {
-            console.log("Zip file saved successfully");
-            
-            // Get the path of the saved zip file
+      function arrayBufferToHexString(arrayBuffer) {
+        return Array.from(new Uint8Array(arrayBuffer))
+          .map(b => b.toString(16).padStart(2, "0"))
+          .join("");
+      }
+
+      function installMiniDapp(hexZipContent, dappName) {
+        MDS.file.savebinary(dappName + ".mds.zip", hexZipContent, function(resp) {
+          if (resp.status) {
             MDS.file.getpath(dappName + ".mds.zip", function(pathResp) {
-                if (pathResp.status) {
-                    console.log("getpath response:", JSON.stringify(pathResp.response));
-                    
-                    // Extract the path from the response
-                    const filePath = pathResp.response.getpath.path;
-                    
-                    // Now we can use the file path to install the MiniDapp
-                    const installCommand = "mds action:install file:" + filePath;
-                    console.log("Install command:", installCommand);
-                    
-                    MDS.cmd(installCommand, function(installResp) {
-                        console.log("Install response:", JSON.stringify(installResp));
-                        if (installResp.status) {
-                            alert("MiniDapp installed successfully!");
-                            // Optionally, delete the temporary zip file
-                            MDS.file.delete(dappName + ".mds.zip", function(deleteResp) {
-                                if (deleteResp.status) {
-                                    console.log("Temporary zip file deleted");
-                                }
-                            });
-                        } else {
-                            alert("Failed to install MiniDapp: " + installResp.error);
-                        }
-                    });
-                } else {
-                    alert("Failed to get file path: " + pathResp.error);
-                }
+              if (pathResp.status) {
+                const filePath = pathResp.response.getpath.path;
+                const installCommand = "mds action:install file:" + filePath;
+                MDS.cmd(installCommand, function(installResp) {
+                  if (installResp.status) {
+                    showNotification("MiniDapp installed successfully!", "success");
+                  } else {
+                    showNotification("Failed to install MiniDapp: " + installResp.error, "error");
+                  }
+                  MDS.file.delete(dappName + ".mds.zip", function() {});
+                });
+              } else {
+                showNotification("Failed to get file path: " + pathResp.error, "error");
+              }
             });
-        } else {
-            alert("Failed to save zip file: " + resp.error);
-        }
-    });
-}
+          } else {
+            showNotification("Failed to save zip file: " + resp.error, "error");
+          }
+        });
+      }
+
+      function showNotification(message, type) {
+        const notification = document.getElementById('notification');
+        notification.textContent = message;
+        notification.className = 'notification ' + type + ' show';
+        
+        setTimeout(() => {
+          notification.className = 'notification ' + type;
+        }, 3000);
+      }
 
       function openDonateModal() {
         document.getElementById("donateModal").style.display = "block";
