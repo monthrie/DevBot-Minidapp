@@ -2059,11 +2059,14 @@
 
         // Set a default name with timestamp
         nameInput.value = "MyMiniDapp_" + Date.now();
+        document.getElementById("dapp-description").value = "";
+        document.getElementById("dapp-version").value = "0.1.0";
 
         modal.style.display = "flex";
 
         span.onclick = function () {
           modal.style.display = "none";
+
         };
 
         window.onclick = function (event) {
@@ -2306,6 +2309,7 @@
         const code = document.getElementById("diyCompileInput").value;
         closeDIYCompileModal();
         compileMiniDapp(code);
+        document.getElementById("diyCompileInput").value = "";
       }
 
       function closeDIYCompileModal() {
