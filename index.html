@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
+  <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>MiniDevBot</title>
@@ -15,7 +15,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>
     <style>
       :root {
-        --background: #0f172a;
+        --background: #0a0f1c;
+        --background2: #0f172a;
         --foreground: #e2e8f0;
         --primary: #3b82f6;
         --secondary: #64748b;
@@ -31,7 +32,9 @@
       }
 
       body {
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+          Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue",
+          sans-serif;
         background-color: var(--background);
         color: var(--foreground);
         line-height: 1.6;
@@ -42,12 +45,12 @@
       }
 
       .title-banner {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        padding: 10px 20px;
-        background: linear-gradient(to bottom, rgba(15, 23, 42, 0.8) 0%, rgba(15, 23, 42, 0) 100%);
+        position: sticky;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 18px 25px;
+        background-color: var(--background2);
         text-align: center;
         z-index: 1000;
       }
@@ -59,6 +62,21 @@
         text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         margin: 0;
         opacity: 0.8;
+      }
+
+      .top-buttons {
+        height: 100%;
+        display: flex;
+        align-items: center;
+      }
+
+      .top-buttons a {
+        margin-right: 25px;
+        background-color: var(--primary);
+        color: var(--foreground);
+        padding: 5px 10px;
+        border-radius: 10px;
+        text-decoration: none;
       }
 
       .chat-container {
@@ -104,7 +122,7 @@
         display: flex;
         flex-direction: column;
         padding: 20px;
-        background-color: rgba(15, 23, 42, 0.8);
+        background-color: var(--background2);
         backdrop-filter: blur(10px);
         border-top: 1px solid rgba(255, 255, 255, 0.1);
       }
@@ -163,8 +181,12 @@
       }
 
       @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
       }
 
       pre[class*="language-"] {
@@ -176,7 +198,7 @@
       }
 
       code[class*="language-"] {
-        font-family: 'Fira Code', 'Courier New', Courier, monospace;
+        font-family: "Fira Code", "Courier New", Courier, monospace;
         font-size: 0.9rem;
       }
 
@@ -253,7 +275,8 @@
         background-color: #2563eb;
       }
 
-      .edit-button, .history-button {
+      .edit-button,
+      .history-button {
         padding: 8px 16px;
         background-color: var(--secondary);
         color: var(--foreground);
@@ -265,21 +288,9 @@
         transition: all 0.3s ease;
       }
 
-      .edit-button:hover, .history-button:hover {
+      .edit-button:hover,
+      .history-button:hover {
         background-color: #475569;
-      }
-
-      .modal {
-        display: none;
-        position: fixed;
-        z-index: 1000;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        overflow: auto;
-        background-color: rgba(0, 0, 0, 0.5);
-        backdrop-filter: blur(5px);
       }
 
       .modal-content {
@@ -352,7 +363,7 @@
       }
 
       .loading-message {
-        font-family: 'Fira Code', 'Courier New', Courier, monospace;
+        font-family: "Fira Code", "Courier New", Courier, monospace;
         color: var(--accent);
         font-size: 0.9rem;
         margin-bottom: 12px;
@@ -388,7 +399,8 @@
           font-size: 1.2rem;
         }
 
-        .edit-button, .history-button {
+        .edit-button,
+        .history-button {
           padding: 6px 12px;
           font-size: 0.8rem;
         }
@@ -401,10 +413,6 @@
         max-width: 600px;
         margin: 10% auto;
         width: 90%;
-      }
-
-      .modal-content h2 {
-        margin-bottom: 1rem;
       }
 
       .modal-content h3 {
@@ -426,13 +434,12 @@
           padding: 1.5rem;
         }
       }
-
       .compile-button {
         position: absolute;
         top: 8px;
         right: 70px; /* Adjust based on the width of your copy button */
         padding: 4px 8px;
-        background-color: var(--secondary);
+        background-color: var(--primary);
         color: #ffffff;
         border: none;
         border-radius: 4px;
@@ -443,7 +450,7 @@
       }
 
       .compile-button:hover {
-        background-color: #475569;
+        background-color: #2563eb;
       }
 
       .download-link {
@@ -465,6 +472,8 @@
 
       .modal {
         display: none;
+        align-items: center;
+        justify-content: center;
         position: fixed;
         z-index: 1000;
         left: 0;
@@ -472,12 +481,13 @@
         width: 100%;
         height: 100%;
         overflow: auto;
-        background-color: rgba(0,0,0,0.4);
+        background-color: rgba(0, 0, 0, 0.4);
+        backdrop-filter: blur(5px);
       }
 
       .modal-content {
+        margin: auto;
         background-color: var(--background);
-        margin: 15% auto;
         padding: 20px;
         border: 1px solid var(--secondary);
         width: 80%;
@@ -528,16 +538,8 @@
         background-color: var(--secondary);
       }
 
-      .top-buttons {
-        position: absolute;
-        top: 10px;
-        left: 20px;
-        right: 20px;
-        display: flex;
-        justify-content: space-between;
-      }
-
-      .donate-button, .about-button {
+      .donate-button,
+      .about-button {
         padding: 8px 16px;
         background-color: var(--secondary);
         color: var(--foreground);
@@ -549,7 +551,8 @@
         transition: all 0.3s ease;
       }
 
-      .donate-button:hover, .about-button:hover {
+      .donate-button:hover,
+      .about-button:hover {
         background-color: #475569;
       }
 
@@ -562,17 +565,24 @@
         width: 100%;
         height: 100%;
         overflow: auto;
-        background-color: rgba(0,0,0,0.4);
+        background-color: rgba(0, 0, 0, 0.4);
       }
 
       .donate-modal-content {
         background-color: var(--background);
-        margin: 15% auto;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
         padding: 20px;
         border: 1px solid var(--secondary);
         width: 80%;
         max-width: 400px;
         border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
       }
 
       .donate-modal-content h2 {
@@ -593,6 +603,17 @@
 
       .donate-modal-content button:hover {
         background-color: #2563eb;
+      }
+
+      .donate-buttons {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        margin-bottom: 20px;
+      }
+
+      .donate-buttons > button:last-child {
+        background-color: rgb(239 68 68);
       }
 
       .notification {
@@ -667,16 +688,12 @@
         display: flex;
         flex-direction: column;
         justify-content: space-around;
-        width: 44px;
-        height: 44px;
         background: transparent;
         border: none;
         cursor: pointer;
         padding: 0;
-        position: absolute;
-        right: 20px;
-        top: 15px;
-        z-index: 1001;
+        height: 100%;
+        max-height: 45px;
       }
 
       .burger-menu:focus {
@@ -688,18 +705,18 @@
         height: 4px;
         background-color: var(--foreground);
         transition: all 0.3s linear;
-        position: relative;
       }
 
       .side-menu {
         position: fixed;
-        top: 60px;
-        right: -250px;
-        width: 250px;
+        top: 80px;
+        right: -200px;
+        width: 200px;
         height: auto;
         max-height: calc(100vh - 60px);
-        background-color: var(--background);
+        background-color: var(--background2);
         transition: right 0.3s ease-in-out;
+        border-radius: 10px 0 0 10px;
         z-index: 1000;
         box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
         overflow-y: auto;
@@ -711,7 +728,7 @@
 
       .side-menu a {
         display: block;
-        padding: 15px 20px;
+        padding: 15px 22px;
         color: var(--foreground);
         text-decoration: none;
         transition: background-color 0.3s;
@@ -725,12 +742,25 @@
         width: 100%;
         height: 300px;
         margin-bottom: 20px;
+        padding: 10px;
         font-family: monospace;
         font-size: 14px;
         resize: vertical;
       }
 
-      .compile-button {
+      .compile-modal-header {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 20px;
+      }
+
+      .compile-modal-header p {
+        color: var(--secondary);
+      }
+
+      .compile-modal-button {
         align-self: flex-end;
         padding: 10px 20px;
         background-color: var(--primary);
@@ -743,39 +773,46 @@
         transition: all 0.3s ease;
       }
 
-      .compile-button:hover {
+      .compile-modal-button:hover {
         background-color: #2563eb;
       }
+
+
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="title-banner">
       <h1 class="title">DevBot v0.1.1 [MINIMA]</h1>
-      <button id="burger-button" class="burger-menu" onclick="toggleMenu()" aria-label="Toggle menu">
-        <span></span>
-        <span></span>
-        <span></span>
-      </button>
+      <div class="top-buttons">
+        <a href="#" onclick="showDIYCompile()">MiniDapp Compiler</a>
+        <button
+          id="burger-button"
+          class="burger-menu"
+          onclick="toggleMenu()"
+          aria-label="Toggle menu"
+        >
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+      </div>
     </div>
 
     <div class="side-menu" id="sideMenu">
       <a href="#" onclick="showAbout()">About</a>
       <a href="#" onclick="openDonateModal()">Donate</a>
       <a href="#" onclick="showSettings()">Settings</a>
-      <a href="#" onclick="showDIYCompile()">DIY Compile</a>
     </div>
 
     <div class="chat-container" id="chat-body">
       <!-- Messages will be inserted here by JavaScript -->
     </div>
     <div class="input-container">
-      <div class="loading-message" id="loading-message">Thinking... may take up to 20 seconds...</div>
+      <div class="loading-message" id="loading-message">
+        Thinking... may take up to 20 seconds...
+      </div>
       <div class="input-row">
-        <textarea
-          class="chat-input"
-          id="chat-input"
-          rows="1"
-        ></textarea>
+        <textarea class="chat-input" id="chat-input" rows="1"></textarea>
         <button class="send-button" onclick="sendMessage()">Send</button>
         <div class="custom-placeholder" id="custom-placeholder">
           Type your question here...
@@ -787,18 +824,36 @@
       <div class="modal-content">
         <span class="close">&times;</span>
         <h2>Welcome to MiniDevBot</h2>
-        <p>MiniDevBot is your AI-powered development assistant on the Minima blockchain.</p>
+        <p>
+          MiniDevBot is your AI-powered development assistant on the Minima
+          blockchain.
+        </p>
         <h3>How it works:</h3>
         <ul>
-          <li>This bot is free to use - but each query costs around $0.12 to run - consider donating to keep the service running.</li>
-          <li>You can ask almost anything... at the moment it struggles with the building of entire complex minidapps, but finds simple minidapps pretty easy.</li>
-          <li>You can also ask it to compile your minidapp and download it (this only works when its given you an entire index.html file).</li>
+          <li>
+            This bot is free to use - but each query costs around $0.12 to run -
+            consider donating to keep the service running.
+          </li>
+          <li>
+            You can ask almost anything... at the moment it struggles with the
+            building of entire complex minidapps, but finds simple minidapps
+            pretty easy.
+          </li>
+          <li>
+            You can also ask it to compile your minidapp and download it (this
+            only works when its given you an entire index.html file).
+          </li>
         </ul>
         <h3>Tips for best results:</h3>
         <ul>
-          <li>If you want a plan, ask for a plan, if you want a full minidapp, ask for a full minidapp.</li>
+          <li>
+            If you want a plan, ask for a plan, if you want a full minidapp, ask
+            for a full minidapp.
+          </li>
           <li>Use code snippets when discussing specific code issues.</li>
-          <li>Mark follow-up questions to maintain context in the conversation.</li>
+          <li>
+            Mark follow-up questions to maintain context in the conversation.
+          </li>
         </ul>
         <p>Happy coding with MiniDevBot!</p>
       </div>
@@ -807,881 +862,893 @@
     <div id="compile-modal" class="modal">
       <div class="modal-content">
         <span class="close">&times;</span>
-        <h2>Compile MiniDapp</h2>
+        <div class="compile-modal-title">
+          <h2>MiniDapp Details</h2>
+        </div>
         <form id="compile-form">
           <label for="dapp-name">MiniDapp Name:</label>
-          <input type="text" id="dapp-name" required>
+          <input type="text" id="dapp-name" required />
           <label for="dapp-description">Description:</label>
-          <input type="text" id="dapp-description">
+          <input type="text" id="dapp-description" />
           <label for="dapp-version">Version:</label>
-          <input type="text" id="dapp-version" value="0.1.0">
+          <input type="text" id="dapp-version" value="0.1.0" />
           <div class="button-container">
-            <button type="button" id="direct-install">Direct Install</button>
-            <button type="button" id="download-boilerplate">Download Boilerplate</button>
+            <button type="button" id="direct-install">Install on MiniHub</button>
+            <button type="button" id="download-boilerplate">
+              Download MiniDapp ZIP
+            </button>
           </div>
         </form>
       </div>
     </div>
 
     <!-- Donate Modal -->
-    <div id="donateModal">
+    <div id="donateModal" class="modal">
       <div class="donate-modal-content">
         <h2>Choose Donation Amount</h2>
-        <button onclick="donate(10)">10 Minima</button>
-        <button onclick="donate(20)">20 Minima</button>
-        <button onclick="donate(50)">50 Minima</button>
-        <button onclick="donate(100)">100 Minima</button>
-        <button onclick="donate(1000)">1000 Minima</button>
-        <button onclick="closeDonateModal()">Cancel</button>
+        <div class="donate-buttons">
+          <button onclick="donate(10)">10 Minima</button>
+          <button onclick="donate(20)">20 Minima</button>
+          <button onclick="donate(50)">50 Minima</button>
+          <button onclick="donate(100)">100 Minima</button>
+          <button onclick="donate(1000)">1000 Minima</button>
+          <button onclick="closeDonateModal()">Cancel</button>
+        </div>
       </div>
     </div>
 
-    <div id="notification" class="notification"></div>
+    <div id="notification"></div>
 
     <!-- DIY Compile Modal -->
     <div id="diyCompileModal" class="modal">
       <div class="modal-content code-input-content">
         <span class="close" onclick="closeDIYCompileModal()">&times;</span>
-        <h2>DIY Compile</h2>
-        <textarea id="diyCompileInput" placeholder="Enter your code here..."></textarea>
-        <button onclick="compileDIYCode()" class="compile-button">Compile MiniDapp</button>
+        <div class="compile-modal-header">
+          <h2>Make into a MiniDapp</h2>
+          <p>Enter your HTML code here to create a downloadable MiniDapp.</p>
+        </div>
+        <textarea
+          id="diyCompileInput"
+          placeholder="Enter your code here..."
+        ></textarea>
+        <button onclick="compileDIYCode()" class="compile-modal-button">
+          Compile MiniDapp
+        </button>
       </div>
     </div>
 
     <script type="text/plain" id="mdsJsContent">
 
-        /**
-* MDS JS lib for MiniDAPPs..
-* 
-* @spartacusrex
-*/
+              /**
+      * MDS JS lib for MiniDAPPs..
+      *
+      * @spartacusrex
+      */
 
-/**
- * The MAIN Minima Callback function 
- */
-var MDS_MAIN_CALLBACK = null;
+      /**
+       * The MAIN Minima Callback function
+       */
+      var MDS_MAIN_CALLBACK = null;
 
-/**
- * API call id array
- */
-var API_CALLS = [];
+      /**
+       * API call id array
+       */
+      var API_CALLS = [];
 
-/**
- * Main MINIMA Object for all interaction
- */
-var MDS = {
-	
-	//Main File host
-	filehost : "",
-	
-	//RPC Host for Minima
-	mainhost : "",
-	
-	//The MiniDAPP UID
-	minidappuid : "",
-	
-	//Is logging RPC enabled
-	logging : false,
-	
-	//When debuggin you can hard set the Host and port
-	DEBUG_HOST : null,
-	DEBUG_PORT : -1,
-	
-	//An allowed TEST Minidapp ID for SQL - can be overridden
-	DEBUG_MINIDAPPID : "0x00",
-	
-	/**
-	 * Minima Startup - with the callback function used for all Minima messages
-	 */
-	init : function(callback){
-		//Log a little..
-		MDS.log("Initialising MDS..");
-		
-		//Is logging enabled.. via the URL
-		if(MDS.form.getParams("MDS_LOGGING") != null){
-			MDS.logging = true;
-		}
-		
-		//Get the host and port..
-		var host = window.location.hostname;
-		var port =  Math.floor(window.location.port);
-		
-		//Get ther MiniDAPP UID
-		MDS.minidappuid = MDS.form.getParams("uid");
-		
-		//HARD SET if debug mode - running from a file
-		if(MDS.DEBUG_HOST != null){
-			MDS.log("DEBUG Settings Found..");
-		
-			host=MDS.DEBUG_HOST;
-			port=MDS.DEBUG_PORT;	
-		}
-		
-		if(MDS.minidappuid == null){
-			MDS.minidappuid = MDS.DEBUG_MINIDAPPID;
-		}
-		
-		//Is one specified..
-		if(MDS.minidappuid == "0x00"){
-			MDS.log("No MiniDAPP UID specified.. using test value");
-		}
-		
-		MDS.filehost = "https://"+host+":"+port+"/";
-		MDS.mainhost = "https://"+host+":"+port+"/mdscommand_/";
-		MDS.log("MDS HOST  : "+MDS.filehost);
-		
-		//Store this for poll messages
-		MDS_MAIN_CALLBACK = callback;
-		
-		//Start the Long Poll listener
-		PollListener();
-		
-		//And Post a message
-		MDSPostMessage({ "event": "inited" });
-	},
-	
-	/**
-	 * Log some data with a timestamp in a consistent manner to the console
-	 */
-	log : function(output){
-		console.log("Minima @ "+new Date().toLocaleString()+" : "+output);
-	},
-	
-	/**
-	 * Notify the User - on Phone it pops up in status bar. On desktop appears in Logs
-	 */
-	notify : function(output){
-		//Send via POST
-		httpPostAsync("notify", output);
-	},
-	
-	/**
-	 * Cancel this MiniDAPPs notification
-	 */
-	notifycancel : function(){
-		//Send via POST
-		httpPostAsync("notifycancel", "*");
-	},
-	
-	/**
-	 * Runs a function on the Minima Command Line - same format as MInima
-	 */
-	cmd : function(command, callback){
-		//Send via POST
-		httpPostAsync("cmd", command, callback);
-	},
-	
-	/**
-	 * Runs a SQL command on this MiniDAPPs SQL Database
-	 */
-	sql : function(command, callback){
-		//Send via POST
-		httpPostAsync("sql", command, callback);
-	},
-	
-	/**
-	 * Get a link to a different Dapp. READ dapps can only get READ DAPPS. WRITE can get all dapps.
-	 */
-	dapplink : function(dappname, callback){
-		//Send via POST
-		httpPostAsync("dapplink", dappname, function(result){
-			
-			var linkdata 	= {};
-			linkdata.status = result.status;
-			 
-			//Create the link..
-			if(result.status){
-				linkdata.uid 		= result.response.uid;
-				linkdata.sessionid 	= result.response.sessionid;
-				linkdata.base 		= MDS.filehost+linkdata.uid+"/index.html?uid="+result.response.sessionid;
-			}else{
-				//Not found..
-				linkdata.error = result.error;
-			}
-			
-			callback(linkdata);
-		});
-	},
-	
-	/**
-	 * API call to a different minidapp
-	 */
-	api : {
-		
-		call : function(dappname, data, callback){
-		
-			//Construct a unique API request
-			var rand = ""+Math.random()*1000000000;
-			
-			//Construct a callback list object
-			var callitem 		= {};
-			callitem.id 		= rand;
-			callitem.callback 	= callback;
-			
-			//Add to the api calls..
-			API_CALLS.push(callitem);
-			
-			//Create the single line
-			var commsline = dappname+"&request&"+rand+"&"+data;		
-			
-			//Send via POST
-			httpPostAsync("api", commsline);
-		},
-		
-		reply : function(dappname, id, data, callback){
-			
-			//Create the single line
-			var commsline = dappname+"&response&"+id+"&"+data;		
-			
-			//Send via POST
-			httpPostAsync("api", commsline, callback);	
-		} 	
-	},
-	
-	/**	
-	 * Network Commands
-	 */
-	net : {
-		
-		/**
-		 * Make a GET request
-		 */
-		GET : function(url, callback){
-			//Send via POST
-			httpPostAsync("net", url, callback);	
-		},
-		
-		/**
-		 * Make a POST request
-		 */
-		POST : function(url, data, callback){
-			
-			//Create the sinlg eline version..
-			var postline = url+"&"+data;
-			
-			//Send via POST
-			httpPostAsync("netpost", postline, callback);	
-		}
-		
-	},
-	
-	/**	
-	 *  Simple GET and SET key value pairs that are saved persistently
-	 */
-	keypair : {
-		
-		/**
-		 * GET a value
-		 */
-		get : function(key, callback){
-			
-			//Create the single line
-			var commsline = "get&"+key;		
-			
-			//Send via POST
-			httpPostAsync("keypair", commsline, callback);	
-		},
-		
-		/**
-		 * SET a value
-		 */
-		set : function(key, value, callback){
-			
-			//Create the single line
-			var commsline = "set&"+key+"&"+value;		
-			
-			//Send via POST
-			httpPostAsync("keypair", commsline, callback);	
-		}
-	},
-	
-	/**	
-	 * COMMS - send a message to ALL minidapps or JUST your own service.js
-	 */
-	comms : {
-		
-		/**
-		 * PUBLIC message broadcast to ALL (callback is optional)
-		 */
-		broadcast : function(msg, callback){
-			
-			//Create the single line
-			var commsline = "public&"+msg;		
-			
-			//Send via POST
-			httpPostAsync("comms", commsline, callback);	
-		},
-		
-		/**
-		 * PRIVATE message send just to this MiniDAPP (callback is optional)
-		 */
-		solo : function(msg, callback){
-			
-			//Create the single line
-			var commsline = "private&"+msg;		
-			
-			//Send via POST
-			httpPostAsync("comms", commsline, callback);	
-		}
-		
-	},
-	
-	/**
-	 * File access
-	 */
-	file : {
-		/**
-		 * List file in a folder .. start at /
-		 */
-		list : function(folder, callback){
-			
-			//Create the single line
-			var commsline = "list&"+folder;		
-			
-			//Send via POST
-			httpPostAsync("file", commsline, callback);
-		},
-		
-		/**
-		 * Save text - can be text, a JSON in string format or hex encoded data
-		 */
-		save : function(filename, text, callback){
-			
-			//Create the single line
-			var commsline = "save&"+filename+"&"+text;		
-			
-			//Send via POST
-			httpPostAsync("file", commsline, callback);
-		},
-		
-		/**
-		 * Save Binary Data - supply as a HEX string
-		 */
-		savebinary : function(filename, hexdata, callback){
-			
-			//Create the single line
-			var commsline = "savebinary&"+filename+"&"+hexdata;		
-			
-			//Send via POST
-			httpPostAsync("file", commsline, callback);
-		},
-		
-		/**
-		 * Load text - can be text, a JSON in string format or hex encoded data
-		 */
-		load : function(filename, callback){
-			
-			//Create the single line
-			var commsline = "load&"+filename;		
-			
-			//Send via POST
-			httpPostAsync("file", commsline, callback);
-		},
-		
-		/**
-		 * Load Binary data - returns the HEX data
-		 */
-		loadbinary : function(filename, callback){
-			
-			//Create the single line
-			var commsline = "loadbinary&"+filename;		
-			
-			//Send via POST
-			httpPostAsync("file", commsline, callback);
-		},
-		
-		/**
-		 * Delete a file
-		 */
-		delete : function(filename, callback){
-			
-			//Create the single line
-			var commsline = "delete&"+filename;		
-			
-			//Send via POST
-			httpPostAsync("file", commsline, callback);
-		},
-		
-		/**
-		 * Get the full path - if you want to run a command on the file / import a txn / unsigned txn etc
-		 */
-		getpath : function(filename, callback){
-			
-			//Create the single line
-			var commsline = "getpath&"+filename;		
-			
-			//Send via POST
-			httpPostAsync("file", commsline, callback);
-		},
-		
-		/**
-		 * Make a directory
-		 */
-		makedir : function(filename, callback){
-			
-			//Create the single line
-			var commsline = "makedir&"+filename;		
-			
-			//Send via POST
-			httpPostAsync("file", commsline, callback);
-		},
-		
-		/**
-		 * Copy a file
-		 */
-		copy : function(filename, newfilename, callback){
-			
-			//Create the single line
-			var commsline = "copy&"+filename+"&"+newfilename;		
-			
-			//Send via POST
-			httpPostAsync("file", commsline, callback);
-		},
-		
-		/**
-		 * Move a file
-		 */
-		move : function(filename, newfilename, callback){
-			
-			//Create the single line
-			var commsline = "move&"+filename+"&"+newfilename;		
-			
-			//Send via POST
-			httpPostAsync("file", commsline, callback);
-		},
-		
-		/**
-		 * Download a File from the InterWeb - Will be put in Downloads folder
-		 */
-		download : function(url, callback){
-			
-			//Create the single line
-			var commsline = "download&"+url;
-			
-			//Send via POST
-			httpPostAsync("file", commsline, callback);	
-		},
-		
-		/**
-		 * Upload a file in chunks to the /fileupload folder		
-		 */
-		upload : function(file, callback){
-			
-			//Start the file recursion..
-			_recurseUploadMDS(file,0,callback);
-		},
-		
-		/**
-		 * List file in a folder .. start at /
-		 */
-		listweb : function(folder, callback){
-			
-			//Create the single line
-			var commsline = "listweb&"+folder;		
-			
-			//Send via POST
-			httpPostAsync("file", commsline, callback);
-		},
-		
-		/**
-		 * Copy a file to your web folder
-		 */
-		copytoweb : function(file, webfile, callback){
-			
-			//Create the single line
-			var commsline = "copytoweb&"+file+"&"+webfile;
-			
-			//Send via POST
-			httpPostAsync("file", commsline, callback);	
-		},
-		
-		/**
-		 * Delete a file or folder from web folder
-		 */
-		deletefromweb : function(file, callback){
-			
-			//Create the single line
-			var commsline = "deletefromweb&"+file;
-			
-			//Send via POST
-			httpPostAsync("file", commsline, callback);	
-		}
-		
-	}, 
-	
-	/**
-	 * Function for GET parameters..
-	 */
-	form : {
-		
-		//Return the GET parameter by scraping the location..
-		getParams : function(parameterName){
-			    var result = null,
-		        tmp = [];
-			    var items = window.location.search.substr(1).split("&");
-			    for (var index = 0; index < items.length; index++) {
-			        tmp = items[index].split("=");
-			        //console.log("TMP:"+tmp);
-				   if (tmp[0] === parameterName) result = decodeURIComponent(tmp[1]);
-			    }
-			    return result;
-		}		
-	},
-	
-	/**
-	 * UTILITY functions.. very useful
-	 */
-	util : {
-		
-		//Convert HEX to Base 64 - removes the 0x if necessary
-		hexToBase64(hexstring) {
-			//Check if starts with 0x
-			var thex = hexstring;
-			if(hexstring.startsWith("0x")){
-				thex = hexstring.substring(2);
-			}	
-			
-		    return btoa(thex.match(/\w{2}/g).map(function(a) {
-		        return String.fromCharCode(parseInt(a, 16));
-		    }).join(""));
-		},
-	
-		//Convert Base64 to HEX	
-		base64ToHex(str) {
-			const raw = atob(str);
-			let result = '';
-			for (let i = 0; i < raw.length; i++) {
-				const hex = raw.charCodeAt(i).toString(16);
-				result += (hex.length === 2 ? hex : '0' + hex);
-			}
-			return result.toUpperCase();
-		},
-		
-		//Convert Base64 to a Uint8Array - useful for Blobs
-		base64ToArrayBuffer(base64) {
-		    var binary_string = window.atob(base64);
-		    var len = binary_string.length;
-		    var bytes = new Uint8Array(len);
-		    for (var i = 0; i < len; i++) {
-		        bytes[i] = binary_string.charCodeAt(i);
-		    }
-		    return bytes.buffer;
-		},
-		
-		//Return a state variable given the coin
-		getStateVariable(coin,port){
-			
-			//Get the state vars
-			var statvars = coin.state;
-			var len = statvars.length;
-			for (var i = 0; i < len; i++) {
-				var state = statvars[i];
-				if(state.port == port){
-					return state.data;
-				} 	
-			}
-			
-			return undefined;
-		}
-	}
-};
+      /**
+       * Main MINIMA Object for all interaction
+       */
+      var MDS = {
 
-/**
- * Post a message to the Minima Event Listeners
- */
-function MDSPostMessage(json){
-   //And dispatch
-   if(MDS_MAIN_CALLBACK){
-		
-		//Is this an API response call..
-		if(json.event == "MDSAPI"){
-			
-			//Check if it is a response..
-			if(!json.data.request){
-				
-				//Find the API CALL Object
-				var found = "";
-				var len = API_CALLS.length;
-				for(var i=0;i<len;i++){
-					if(API_CALLS[i].id == json.data.id){
-						//found it..!
-						found = json.data.id;
-						
-						//Construct a reply..
-						var reply 	 = {};
-						reply.status = json.data.status; 
-						reply.data 	 = json.data.message;
-						
-						API_CALLS[i].callback(reply);
-					}
-				}	
-				
-				//Remove it..
-				if(found != ""){
-					API_CALLS = API_CALLS.filter(function(apic){
-						return apic.id != found; 
-					});
-				}else{
-					//MDS.log("API CALL NOT FOUND!"+JSON.stringify(json));	
-				}
-				
-				//Response messages not forwarded - only via API call
-				return;	
-			}
-		}
-		
-		//Call the main function
-		MDS_MAIN_CALLBACK(json);	
-   }      
-}
+      	//Main File host
+      	filehost : "",
+
+      	//RPC Host for Minima
+      	mainhost : "",
+
+      	//The MiniDAPP UID
+      	minidappuid : "",
+
+      	//Is logging RPC enabled
+      	logging : false,
+
+      	//When debuggin you can hard set the Host and port
+      	DEBUG_HOST : null,
+      	DEBUG_PORT : -1,
+
+      	//An allowed TEST Minidapp ID for SQL - can be overridden
+      	DEBUG_MINIDAPPID : "0x00",
+
+      	/**
+      	 * Minima Startup - with the callback function used for all Minima messages
+      	 */
+      	init : function(callback){
+      		//Log a little..
+      		MDS.log("Initialising MDS..");
+
+      		//Is logging enabled.. via the URL
+      		if(MDS.form.getParams("MDS_LOGGING") != null){
+      			MDS.logging = true;
+      		}
+
+      		//Get the host and port..
+      		var host = window.location.hostname;
+      		var port =  Math.floor(window.location.port);
+
+      		//Get ther MiniDAPP UID
+      		MDS.minidappuid = MDS.form.getParams("uid");
+
+      		//HARD SET if debug mode - running from a file
+      		if(MDS.DEBUG_HOST != null){
+      			MDS.log("DEBUG Settings Found..");
+
+      			host=MDS.DEBUG_HOST;
+      			port=MDS.DEBUG_PORT;
+      		}
+
+      		if(MDS.minidappuid == null){
+      			MDS.minidappuid = MDS.DEBUG_MINIDAPPID;
+      		}
+
+      		//Is one specified..
+      		if(MDS.minidappuid == "0x00"){
+      			MDS.log("No MiniDAPP UID specified.. using test value");
+      		}
+
+      		MDS.filehost = "https://"+host+":"+port+"/";
+      		MDS.mainhost = "https://"+host+":"+port+"/mdscommand_/";
+      		MDS.log("MDS HOST  : "+MDS.filehost);
+
+      		//Store this for poll messages
+      		MDS_MAIN_CALLBACK = callback;
+
+      		//Start the Long Poll listener
+      		PollListener();
+
+      		//And Post a message
+      		MDSPostMessage({ "event": "inited" });
+      	},
+
+      	/**
+      	 * Log some data with a timestamp in a consistent manner to the console
+      	 */
+      	log : function(output){
+      		console.log("Minima @ "+new Date().toLocaleString()+" : "+output);
+      	},
+
+      	/**
+      	 * Notify the User - on Phone it pops up in status bar. On desktop appears in Logs
+      	 */
+      	notify : function(output){
+      		//Send via POST
+      		httpPostAsync("notify", output);
+      	},
+
+      	/**
+      	 * Cancel this MiniDAPPs notification
+      	 */
+      	notifycancel : function(){
+      		//Send via POST
+      		httpPostAsync("notifycancel", "*");
+      	},
+
+      	/**
+      	 * Runs a function on the Minima Command Line - same format as MInima
+      	 */
+      	cmd : function(command, callback){
+      		//Send via POST
+      		httpPostAsync("cmd", command, callback);
+      	},
+
+      	/**
+      	 * Runs a SQL command on this MiniDAPPs SQL Database
+      	 */
+      	sql : function(command, callback){
+      		//Send via POST
+      		httpPostAsync("sql", command, callback);
+      	},
+
+      	/**
+      	 * Get a link to a different Dapp. READ dapps can only get READ DAPPS. WRITE can get all dapps.
+      	 */
+      	dapplink : function(dappname, callback){
+      		//Send via POST
+      		httpPostAsync("dapplink", dappname, function(result){
+
+      			var linkdata 	= {};
+      			linkdata.status = result.status;
+
+      			//Create the link..
+      			if(result.status){
+      				linkdata.uid 		= result.response.uid;
+      				linkdata.sessionid 	= result.response.sessionid;
+      				linkdata.base 		= MDS.filehost+linkdata.uid+"/index.html?uid="+result.response.sessionid;
+      			}else{
+      				//Not found..
+      				linkdata.error = result.error;
+      			}
+
+      			callback(linkdata);
+      		});
+      	},
+
+      	/**
+      	 * API call to a different minidapp
+      	 */
+      	api : {
+
+      		call : function(dappname, data, callback){
+
+      			//Construct a unique API request
+      			var rand = ""+Math.random()*1000000000;
+
+      			//Construct a callback list object
+      			var callitem 		= {};
+      			callitem.id 		= rand;
+      			callitem.callback 	= callback;
+
+      			//Add to the api calls..
+      			API_CALLS.push(callitem);
+
+      			//Create the single line
+      			var commsline = dappname+"&request&"+rand+"&"+data;
+
+      			//Send via POST
+      			httpPostAsync("api", commsline);
+      		},
+
+      		reply : function(dappname, id, data, callback){
+
+      			//Create the single line
+      			var commsline = dappname+"&response&"+id+"&"+data;
+
+      			//Send via POST
+      			httpPostAsync("api", commsline, callback);
+      		}
+      	},
+
+      	/**
+      	 * Network Commands
+      	 */
+      	net : {
+
+      		/**
+      		 * Make a GET request
+      		 */
+      		GET : function(url, callback){
+      			//Send via POST
+      			httpPostAsync("net", url, callback);
+      		},
+
+      		/**
+      		 * Make a POST request
+      		 */
+      		POST : function(url, data, callback){
+
+      			//Create the sinlg eline version..
+      			var postline = url+"&"+data;
+
+      			//Send via POST
+      			httpPostAsync("netpost", postline, callback);
+      		}
+
+      	},
+
+      	/**
+      	 *  Simple GET and SET key value pairs that are saved persistently
+      	 */
+      	keypair : {
+
+      		/**
+      		 * GET a value
+      		 */
+      		get : function(key, callback){
+
+      			//Create the single line
+      			var commsline = "get&"+key;
+
+      			//Send via POST
+      			httpPostAsync("keypair", commsline, callback);
+      		},
+
+      		/**
+      		 * SET a value
+      		 */
+      		set : function(key, value, callback){
+
+      			//Create the single line
+      			var commsline = "set&"+key+"&"+value;
+
+      			//Send via POST
+      			httpPostAsync("keypair", commsline, callback);
+      		}
+      	},
+
+      	/**
+      	 * COMMS - send a message to ALL minidapps or JUST your own service.js
+      	 */
+      	comms : {
+
+      		/**
+      		 * PUBLIC message broadcast to ALL (callback is optional)
+      		 */
+      		broadcast : function(msg, callback){
+
+      			//Create the single line
+      			var commsline = "public&"+msg;
+
+      			//Send via POST
+      			httpPostAsync("comms", commsline, callback);
+      		},
+
+      		/**
+      		 * PRIVATE message send just to this MiniDAPP (callback is optional)
+      		 */
+      		solo : function(msg, callback){
+
+      			//Create the single line
+      			var commsline = "private&"+msg;
+
+      			//Send via POST
+      			httpPostAsync("comms", commsline, callback);
+      		}
+
+      	},
+
+      	/**
+      	 * File access
+      	 */
+      	file : {
+      		/**
+      		 * List file in a folder .. start at /
+      		 */
+      		list : function(folder, callback){
+
+      			//Create the single line
+      			var commsline = "list&"+folder;
+
+      			//Send via POST
+      			httpPostAsync("file", commsline, callback);
+      		},
+
+      		/**
+      		 * Save text - can be text, a JSON in string format or hex encoded data
+      		 */
+      		save : function(filename, text, callback){
+
+      			//Create the single line
+      			var commsline = "save&"+filename+"&"+text;
+
+      			//Send via POST
+      			httpPostAsync("file", commsline, callback);
+      		},
+
+      		/**
+      		 * Save Binary Data - supply as a HEX string
+      		 */
+      		savebinary : function(filename, hexdata, callback){
+
+      			//Create the single line
+      			var commsline = "savebinary&"+filename+"&"+hexdata;
+
+      			//Send via POST
+      			httpPostAsync("file", commsline, callback);
+      		},
+
+      		/**
+      		 * Load text - can be text, a JSON in string format or hex encoded data
+      		 */
+      		load : function(filename, callback){
+
+      			//Create the single line
+      			var commsline = "load&"+filename;
+
+      			//Send via POST
+      			httpPostAsync("file", commsline, callback);
+      		},
+
+      		/**
+      		 * Load Binary data - returns the HEX data
+      		 */
+      		loadbinary : function(filename, callback){
+
+      			//Create the single line
+      			var commsline = "loadbinary&"+filename;
+
+      			//Send via POST
+      			httpPostAsync("file", commsline, callback);
+      		},
+
+      		/**
+      		 * Delete a file
+      		 */
+      		delete : function(filename, callback){
+
+      			//Create the single line
+      			var commsline = "delete&"+filename;
+
+      			//Send via POST
+      			httpPostAsync("file", commsline, callback);
+      		},
+
+      		/**
+      		 * Get the full path - if you want to run a command on the file / import a txn / unsigned txn etc
+      		 */
+      		getpath : function(filename, callback){
+
+      			//Create the single line
+      			var commsline = "getpath&"+filename;
+
+      			//Send via POST
+      			httpPostAsync("file", commsline, callback);
+      		},
+
+      		/**
+      		 * Make a directory
+      		 */
+      		makedir : function(filename, callback){
+
+      			//Create the single line
+      			var commsline = "makedir&"+filename;
+
+      			//Send via POST
+      			httpPostAsync("file", commsline, callback);
+      		},
+
+      		/**
+      		 * Copy a file
+      		 */
+      		copy : function(filename, newfilename, callback){
+
+      			//Create the single line
+      			var commsline = "copy&"+filename+"&"+newfilename;
+
+      			//Send via POST
+      			httpPostAsync("file", commsline, callback);
+      		},
+
+      		/**
+      		 * Move a file
+      		 */
+      		move : function(filename, newfilename, callback){
+
+      			//Create the single line
+      			var commsline = "move&"+filename+"&"+newfilename;
+
+      			//Send via POST
+      			httpPostAsync("file", commsline, callback);
+      		},
+
+      		/**
+      		 * Download a File from the InterWeb - Will be put in Downloads folder
+      		 */
+      		download : function(url, callback){
+
+      			//Create the single line
+      			var commsline = "download&"+url;
+
+      			//Send via POST
+      			httpPostAsync("file", commsline, callback);
+      		},
+
+      		/**
+      		 * Upload a file in chunks to the /fileupload folder
+      		 */
+      		upload : function(file, callback){
+
+      			//Start the file recursion..
+      			_recurseUploadMDS(file,0,callback);
+      		},
+
+      		/**
+      		 * List file in a folder .. start at /
+      		 */
+      		listweb : function(folder, callback){
+
+      			//Create the single line
+      			var commsline = "listweb&"+folder;
+
+      			//Send via POST
+      			httpPostAsync("file", commsline, callback);
+      		},
+
+      		/**
+      		 * Copy a file to your web folder
+      		 */
+      		copytoweb : function(file, webfile, callback){
+
+      			//Create the single line
+      			var commsline = "copytoweb&"+file+"&"+webfile;
+
+      			//Send via POST
+      			httpPostAsync("file", commsline, callback);
+      		},
+
+      		/**
+      		 * Delete a file or folder from web folder
+      		 */
+      		deletefromweb : function(file, callback){
+
+      			//Create the single line
+      			var commsline = "deletefromweb&"+file;
+
+      			//Send via POST
+      			httpPostAsync("file", commsline, callback);
+      		}
+
+      	},
+
+      	/**
+      	 * Function for GET parameters..
+      	 */
+      	form : {
+
+      		//Return the GET parameter by scraping the location..
+      		getParams : function(parameterName){
+      			    var result = null,
+      		        tmp = [];
+      			    var items = window.location.search.substr(1).split("&");
+      			    for (var index = 0; index < items.length; index++) {
+      			        tmp = items[index].split("=");
+      			        //console.log("TMP:"+tmp);
+      				   if (tmp[0] === parameterName) result = decodeURIComponent(tmp[1]);
+      			    }
+      			    return result;
+      		}
+      	},
+
+      	/**
+      	 * UTILITY functions.. very useful
+      	 */
+      	util : {
+
+      		//Convert HEX to Base 64 - removes the 0x if necessary
+      		hexToBase64(hexstring) {
+      			//Check if starts with 0x
+      			var thex = hexstring;
+      			if(hexstring.startsWith("0x")){
+      				thex = hexstring.substring(2);
+      			}
+
+      		    return btoa(thex.match(/\w{2}/g).map(function(a) {
+      		        return String.fromCharCode(parseInt(a, 16));
+      		    }).join(""));
+      		},
+
+      		//Convert Base64 to HEX
+      		base64ToHex(str) {
+      			const raw = atob(str);
+      			let result = '';
+      			for (let i = 0; i < raw.length; i++) {
+      				const hex = raw.charCodeAt(i).toString(16);
+      				result += (hex.length === 2 ? hex : '0' + hex);
+      			}
+      			return result.toUpperCase();
+      		},
+
+      		//Convert Base64 to a Uint8Array - useful for Blobs
+      		base64ToArrayBuffer(base64) {
+      		    var binary_string = window.atob(base64);
+      		    var len = binary_string.length;
+      		    var bytes = new Uint8Array(len);
+      		    for (var i = 0; i < len; i++) {
+      		        bytes[i] = binary_string.charCodeAt(i);
+      		    }
+      		    return bytes.buffer;
+      		},
+
+      		//Return a state variable given the coin
+      		getStateVariable(coin,port){
+
+      			//Get the state vars
+      			var statvars = coin.state;
+      			var len = statvars.length;
+      			for (var i = 0; i < len; i++) {
+      				var state = statvars[i];
+      				if(state.port == port){
+      					return state.data;
+      				}
+      			}
+
+      			return undefined;
+      		}
+      	}
+      };
+
+      /**
+       * Post a message to the Minima Event Listeners
+       */
+      function MDSPostMessage(json){
+         //And dispatch
+         if(MDS_MAIN_CALLBACK){
+
+      		//Is this an API response call..
+      		if(json.event == "MDSAPI"){
+
+      			//Check if it is a response..
+      			if(!json.data.request){
+
+      				//Find the API CALL Object
+      				var found = "";
+      				var len = API_CALLS.length;
+      				for(var i=0;i<len;i++){
+      					if(API_CALLS[i].id == json.data.id){
+      						//found it..!
+      						found = json.data.id;
+
+      						//Construct a reply..
+      						var reply 	 = {};
+      						reply.status = json.data.status;
+      						reply.data 	 = json.data.message;
+
+      						API_CALLS[i].callback(reply);
+      					}
+      				}
+
+      				//Remove it..
+      				if(found != ""){
+      					API_CALLS = API_CALLS.filter(function(apic){
+      						return apic.id != found;
+      					});
+      				}else{
+      					//MDS.log("API CALL NOT FOUND!"+JSON.stringify(json));
+      				}
+
+      				//Response messages not forwarded - only via API call
+      				return;
+      			}
+      		}
+
+      		//Call the main function
+      		MDS_MAIN_CALLBACK(json);
+         }
+      }
 
 
-var PollCounter = 0;
-var PollSeries  = 0;
-function PollListener(){
-	
-	//The POLL host
-	var pollhost = MDS.mainhost+"poll?"+"uid="+MDS.minidappuid;
-	var polldata = "series="+PollSeries+"&counter="+PollCounter;
-	
-	httpPostAsyncPoll(pollhost,polldata,function(msg){
-		
-		//Are we on the right Series..
-		if(PollSeries != msg.series){
-			
-			//Reset to the right series.. 
-			PollSeries  = msg.series;
-			PollCounter = msg.counter;
-			
-		}else{
-			
-			//Is there a message ?
-			if(msg.status == true){
-				
-				//Get the current counter..
-				PollCounter = msg.response.counter+1;
-				
-				//And Post the message..
-				MDSPostMessage(msg.response.message);	
-			}	
-		}
-		
-		//And around we go again..
-		PollListener();
-	});
-}
+      var PollCounter = 0;
+      var PollSeries  = 0;
+      function PollListener(){
 
-function postMDSFail(command, params, status){
-	//Some error..
-	if(MDS.logging){
-		MDS.log("** An error occurred during an MDS command!");
-	}
-	
-	//Create the message
-	var errormsg = {};
-	errormsg.event = "MDSFAIL";
-	errormsg.data = {};
-	errormsg.data.command 	= command;
-	errormsg.data.params 	= params;
-	errormsg.data.error 	= status;
-				
-	//Post it to the stack			
-	MDSPostMessage(errormsg);
-}
+      	//The POLL host
+      	var pollhost = MDS.mainhost+"poll?"+"uid="+MDS.minidappuid;
+      	var polldata = "series="+PollSeries+"&counter="+PollCounter;
 
-/**
- * Utility function for GET request
- * 
- * @param theUrl
- * @param callback
- * @param params
- * @returns
- */
-function httpPostAsync(theUrl, params, callback){
-	
-	//Add the MiniDAPP UID..
-	var finalurl = MDS.mainhost+theUrl+"?uid="+MDS.minidappuid;
-	
-	//Do we log it..
-	if(MDS.logging){
-		MDS.log("POST_RPC:"+finalurl+" PARAMS:"+params);
-	}
+      	httpPostAsyncPoll(pollhost,polldata,function(msg){
 
-	var xmlHttp = new XMLHttpRequest();
-    xmlHttp.onreadystatechange = function() { 
-        
-		var status = xmlHttp.status;
-		if (xmlHttp.readyState == XMLHttpRequest.DONE){
-			if (status === 0 || (status >= 200 && status < 400)) {
-			
-				//Do we log it..
-	        	if(MDS.logging){
-	        		MDS.log("RESPONSE:"+xmlHttp.responseText);
-	        	}
-	
-	        	//Send it to the callback function..
-	        	if(callback){
-	        		callback(JSON.parse(xmlHttp.responseText));
-	        	}
-	        
-			}else{
-				//Some error..
-				postMDSFail(finalurl,params,xmlHttp.status);
-			}
-		}
-    }
-    xmlHttp.open("POST", finalurl, true); // true for asynchronous 
-	xmlHttp.overrideMimeType('text/plain; charset=UTF-8');
-    xmlHttp.send(encodeURIComponent(params));
-	//xmlHttp.onerror = function () {
-	//  console.log("** An error occurred during the transaction");
-	//};
-}
+      		//Are we on the right Series..
+      		if(PollSeries != msg.series){
 
-/**
- * POLLING Call
- */
-function httpPostAsyncPoll(theUrl, params, callback){
-	//Do we log it..
-	if(MDS.logging){
-		MDS.log("POST_POLL_RPC:"+theUrl+" PARAMS:"+params);
-	}
+      			//Reset to the right series..
+      			PollSeries  = msg.series;
+      			PollCounter = msg.counter;
 
-	var xmlHttp = new XMLHttpRequest();
-    xmlHttp.onreadystatechange = function() { 
-        var status = xmlHttp.status;
-		if (xmlHttp.readyState == XMLHttpRequest.DONE){
-			if (status === 0 || (status >= 200 && status < 400)) {
-			
-				//Do we log it..
-	        	if(MDS.logging){
-	        		MDS.log("RESPONSE:"+xmlHttp.responseText);
-	        	}
-	
-	        	//Send it to the callback function..
-	        	if(callback){
-	        		callback(JSON.parse(xmlHttp.responseText));
-	        	}
-	        
-			}else{
-				//Some error..
-				postMDSFail(theUrl,params,xmlHttp.status);
-			}
-		}
-    }
-    xmlHttp.addEventListener('error', function(ev){
-		MDS.log("Error Polling - reconnect in 10s");
-		setTimeout(function(){PollListener();},10000);
-	});
-    xmlHttp.open("POST", theUrl, true); // true for asynchronous 
-	xmlHttp.overrideMimeType('text/plain; charset=UTF-8');
-    xmlHttp.send(encodeURIComponent(params));
-}
+      		}else{
 
-/**
- * Internal recursive function for file upload 
- */
-function _recurseUploadMDS(thefullfile, chunk, callback){
-		
-	//Get some details
-	var filename 	= thefullfile.name;
-	var filesize 	= thefullfile.size;
-	
-	//1MB MAX Chunk size..
-	var chunk_size 	= 1024 * 1024;
-	var allchunks  	= Math.ceil(filesize / chunk_size);
-	
-	//Have we finished..
-	if(chunk>allchunks-1){
-		return;
-	}
-	
-	var startbyte = chunk_size * chunk;
-	var endbyte   = startbyte + chunk_size;
-	if(endbyte>filesize){
-		endbyte = filesize;
-	}
-	
-	//Get a piece of the file
-	var filepiece = thefullfile.slice(startbyte,endbyte);
-	
-	//Create a form..
-	var formdata = new FormData();
-	formdata.append("uid", MDS.minidappuid);
-	
-	//Filedata handled a little differently
-	formdata.append("filename", filename);
-	formdata.append("filesize", filesize);
-	formdata.append("allchunks", allchunks);
-	formdata.append("chunknum", chunk);
-	formdata.append("fileupload", filepiece);
-  
-	var request = new XMLHttpRequest();
-	request.open("POST", "/fileuploadchunk.html");
-	request.onreadystatechange = function() { 
-	        
-		var status = request.status;
-		if (request.readyState == XMLHttpRequest.DONE){
-			if (status === 0 || (status >= 200 && status < 400)) {
-				
-				//Send it to the callback function..
-	        	if(callback){
-	        		var resp 		= {};
-	        		resp.status		= true;
-	        		resp.filename 	= filename;
-	        		resp.size 		= filesize;
-	        		resp.allchunks 	= allchunks;
-	        		resp.chunk 		= chunk+1;
-	        		resp.start 		= startbyte;
-	        		resp.end 		= endbyte;
-	        		
-	        		callback(resp);
-	        	}
-	        
-				//And now continue uploading..
-				if(callback){
-					_recurseUploadMDS(thefullfile,chunk+1, callback);	
-				}else{
-					_recurseUploadMDS(thefullfile,chunk+1);
-				}				
-				
-			}else{
-				if(callback){
-	        		var resp 		= {};
-	        		resp.status		= false;
-	        		resp.error		= request.responseText;
-	        		resp.filename 	= filename;
-	        		resp.size 		= filesize;
-	        		resp.allchunks 	= allchunks;
-	        		resp.chunk 		= chunk;
-	        		resp.start 		= startbyte;
-	        		resp.end 		= endbyte;
-	        		
-	        		callback(resp);
-	        	}
-					
-				//Some error..
-				MDS.log("MDS FILEUPLOAD CHUNK ERROR: "+request.responseText);
-			}
-		}
-    }
+      			//Is there a message ?
+      			if(msg.status == true){
 
-	//And finally send the POST request
-	request.send(formdata);
-}
+      				//Get the current counter..
+      				PollCounter = msg.response.counter+1;
 
+      				//And Post the message..
+      				MDSPostMessage(msg.response.message);
+      			}
+      		}
+
+      		//And around we go again..
+      		PollListener();
+      	});
+      }
+
+      function postMDSFail(command, params, status){
+      	//Some error..
+      	if(MDS.logging){
+      		MDS.log("** An error occurred during an MDS command!");
+      	}
+
+      	//Create the message
+      	var errormsg = {};
+      	errormsg.event = "MDSFAIL";
+      	errormsg.data = {};
+      	errormsg.data.command 	= command;
+      	errormsg.data.params 	= params;
+      	errormsg.data.error 	= status;
+
+      	//Post it to the stack
+      	MDSPostMessage(errormsg);
+      }
+
+      /**
+       * Utility function for GET request
+       *
+       * @param theUrl
+       * @param callback
+       * @param params
+       * @returns
+       */
+      function httpPostAsync(theUrl, params, callback){
+
+      	//Add the MiniDAPP UID..
+      	var finalurl = MDS.mainhost+theUrl+"?uid="+MDS.minidappuid;
+
+      	//Do we log it..
+      	if(MDS.logging){
+      		MDS.log("POST_RPC:"+finalurl+" PARAMS:"+params);
+      	}
+
+      	var xmlHttp = new XMLHttpRequest();
+          xmlHttp.onreadystatechange = function() {
+
+      		var status = xmlHttp.status;
+      		if (xmlHttp.readyState == XMLHttpRequest.DONE){
+      			if (status === 0 || (status >= 200 && status < 400)) {
+
+      				//Do we log it..
+      	        	if(MDS.logging){
+      	        		MDS.log("RESPONSE:"+xmlHttp.responseText);
+      	        	}
+
+      	        	//Send it to the callback function..
+      	        	if(callback){
+      	        		callback(JSON.parse(xmlHttp.responseText));
+      	        	}
+
+      			}else{
+      				//Some error..
+      				postMDSFail(finalurl,params,xmlHttp.status);
+      			}
+      		}
+          }
+          xmlHttp.open("POST", finalurl, true); // true for asynchronous
+      	xmlHttp.overrideMimeType('text/plain; charset=UTF-8');
+          xmlHttp.send(encodeURIComponent(params));
+      	//xmlHttp.onerror = function () {
+      	//  console.log("** An error occurred during the transaction");
+      	//};
+      }
+
+      /**
+       * POLLING Call
+       */
+      function httpPostAsyncPoll(theUrl, params, callback){
+      	//Do we log it..
+      	if(MDS.logging){
+      		MDS.log("POST_POLL_RPC:"+theUrl+" PARAMS:"+params);
+      	}
+
+      	var xmlHttp = new XMLHttpRequest();
+          xmlHttp.onreadystatechange = function() {
+              var status = xmlHttp.status;
+      		if (xmlHttp.readyState == XMLHttpRequest.DONE){
+      			if (status === 0 || (status >= 200 && status < 400)) {
+
+      				//Do we log it..
+      	        	if(MDS.logging){
+      	        		MDS.log("RESPONSE:"+xmlHttp.responseText);
+      	        	}
+
+      	        	//Send it to the callback function..
+      	        	if(callback){
+      	        		callback(JSON.parse(xmlHttp.responseText));
+      	        	}
+
+      			}else{
+      				//Some error..
+      				postMDSFail(theUrl,params,xmlHttp.status);
+      			}
+      		}
+          }
+          xmlHttp.addEventListener('error', function(ev){
+      		MDS.log("Error Polling - reconnect in 10s");
+      		setTimeout(function(){PollListener();},10000);
+      	});
+          xmlHttp.open("POST", theUrl, true); // true for asynchronous
+      	xmlHttp.overrideMimeType('text/plain; charset=UTF-8');
+          xmlHttp.send(encodeURIComponent(params));
+      }
+
+      /**
+       * Internal recursive function for file upload
+       */
+      function _recurseUploadMDS(thefullfile, chunk, callback){
+
+      	//Get some details
+      	var filename 	= thefullfile.name;
+      	var filesize 	= thefullfile.size;
+
+      	//1MB MAX Chunk size..
+      	var chunk_size 	= 1024 * 1024;
+      	var allchunks  	= Math.ceil(filesize / chunk_size);
+
+      	//Have we finished..
+      	if(chunk>allchunks-1){
+      		return;
+      	}
+
+      	var startbyte = chunk_size * chunk;
+      	var endbyte   = startbyte + chunk_size;
+      	if(endbyte>filesize){
+      		endbyte = filesize;
+      	}
+
+      	//Get a piece of the file
+      	var filepiece = thefullfile.slice(startbyte,endbyte);
+
+      	//Create a form..
+      	var formdata = new FormData();
+      	formdata.append("uid", MDS.minidappuid);
+
+      	//Filedata handled a little differently
+      	formdata.append("filename", filename);
+      	formdata.append("filesize", filesize);
+      	formdata.append("allchunks", allchunks);
+      	formdata.append("chunknum", chunk);
+      	formdata.append("fileupload", filepiece);
+
+      	var request = new XMLHttpRequest();
+      	request.open("POST", "/fileuploadchunk.html");
+      	request.onreadystatechange = function() {
+
+      		var status = request.status;
+      		if (request.readyState == XMLHttpRequest.DONE){
+      			if (status === 0 || (status >= 200 && status < 400)) {
+
+      				//Send it to the callback function..
+      	        	if(callback){
+      	        		var resp 		= {};
+      	        		resp.status		= true;
+      	        		resp.filename 	= filename;
+      	        		resp.size 		= filesize;
+      	        		resp.allchunks 	= allchunks;
+      	        		resp.chunk 		= chunk+1;
+      	        		resp.start 		= startbyte;
+      	        		resp.end 		= endbyte;
+
+      	        		callback(resp);
+      	        	}
+
+      				//And now continue uploading..
+      				if(callback){
+      					_recurseUploadMDS(thefullfile,chunk+1, callback);
+      				}else{
+      					_recurseUploadMDS(thefullfile,chunk+1);
+      				}
+
+      			}else{
+      				if(callback){
+      	        		var resp 		= {};
+      	        		resp.status		= false;
+      	        		resp.error		= request.responseText;
+      	        		resp.filename 	= filename;
+      	        		resp.size 		= filesize;
+      	        		resp.allchunks 	= allchunks;
+      	        		resp.chunk 		= chunk;
+      	        		resp.start 		= startbyte;
+      	        		resp.end 		= endbyte;
+
+      	        		callback(resp);
+      	        	}
+
+      				//Some error..
+      				MDS.log("MDS FILEUPLOAD CHUNK ERROR: "+request.responseText);
+      			}
+      		}
+          }
+
+      	//And finally send the POST request
+      	request.send(formdata);
+      }
     </script>
 
     <script type="text/plain" id="dappConfContent">
 
-        {
-            "name": "AAA TEST",
-            "icon": "brain.png",
-            "version": "0.1.0",
-            "description": "could be anything",
-            "browser": "internal"
-          }
-
+      {
+          "name": "AAA TEST",
+          "icon": "brain.png",
+          "version": "0.1.0",
+          "description": "could be anything",
+          "browser": "internal"
+        }
     </script>
 
     <script>
@@ -1707,37 +1774,42 @@ function _recurseUploadMDS(thefullfile, chunk, callback){
           }
         });
 
-        document.querySelector("#info-modal .close").addEventListener("click", function() {
-          document.getElementById("info-modal").style.display = "none";
-        });
+        document
+          .querySelector("#info-modal .close")
+          .addEventListener("click", function () {
+            document.getElementById("info-modal").style.display = "none";
+          });
       });
 
       // Initialize MDS
-      MDS.init(function(msg) {
+      MDS.init(function (msg) {
         if (msg.event === "inited") {
           console.log("MDS initialized");
 
           // Create the chatbot_responses table if it doesn't exist
-          MDS.sql("CREATE TABLE IF NOT EXISTS chatbot_responses (id INT AUTO_INCREMENT PRIMARY KEY, timestamp DATETIME, response TEXT)", function(res) {
-            if (res.status) {
-              console.log("Table created successfully");
-            } else {
-              console.error("Error creating table:", res.error);
+          MDS.sql(
+            "CREATE TABLE IF NOT EXISTS chatbot_responses (id INT AUTO_INCREMENT PRIMARY KEY, timestamp DATETIME, response TEXT)",
+            function (res) {
+              if (res.status) {
+                console.log("Table created successfully");
+              } else {
+                console.error("Error creating table:", res.error);
+              }
             }
-          });
+          );
         }
       });
 
       function storeChatbotResponse(response) {
         const timestamp = new Date().toISOString();
         const jsonResponse = JSON.stringify(response);
-        
+
         // Escape single quotes in the JSON string to prevent SQL injection
         const escapedJsonResponse = jsonResponse.replace(/'/g, "''");
-        
+
         const sqlQuery = `INSERT INTO chatbot_responses (timestamp, response) VALUES ('${timestamp}', '${escapedJsonResponse}')`;
-        
-        MDS.sql(sqlQuery, function(res) {
+
+        MDS.sql(sqlQuery, function (res) {
           if (res.status) {
             console.log("Response stored successfully");
           } else {
@@ -1747,19 +1819,22 @@ function _recurseUploadMDS(thefullfile, chunk, callback){
       }
 
       function getChatbotResponses(callback) {
-        MDS.sql("SELECT * FROM chatbot_responses ORDER BY `timestamp` DESC", function(res) {
-          if (res.status) {
-            const responses = res.rows.map(row => ({
-              id: row.id,
-              timestamp: row.timestamp,
-              response: JSON.parse(row.response)
-            }));
-            callback(responses);
-          } else {
-            console.error("Error retrieving responses:", res.error);
-            callback([]);
+        MDS.sql(
+          "SELECT * FROM chatbot_responses ORDER BY `timestamp` DESC",
+          function (res) {
+            if (res.status) {
+              const responses = res.rows.map((row) => ({
+                id: row.id,
+                timestamp: row.timestamp,
+                response: JSON.parse(row.response),
+              }));
+              callback(responses);
+            } else {
+              console.error("Error retrieving responses:", res.error);
+              callback([]);
+            }
           }
-        });
+        );
       }
 
       async function sendMessage() {
@@ -1808,7 +1883,6 @@ function _recurseUploadMDS(thefullfile, chunk, callback){
 
           // Store the response in the database
           storeChatbotResponse(data.answer);
-
         } catch (error) {
           console.error("Error:", error);
           displayMessage(
@@ -1832,7 +1906,7 @@ function _recurseUploadMDS(thefullfile, chunk, callback){
       function copyToClipboard(text) {
         navigator.clipboard.writeText(text).then(
           function () {
-            alert("Copied to clipboard!");
+            showNotification("Copied to clipboard!", "success");
           },
           function (err) {
             console.error("Could not copy text: ", err);
@@ -1918,7 +1992,7 @@ function _recurseUploadMDS(thefullfile, chunk, callback){
           sourcesContent.className = "sources-content";
           sourcesContent.innerHTML = sources
             .map((source) => {
-              const cleanedSource = source.replace(/^.*?(type|input)\//, '');
+              const cleanedSource = source.replace(/^.*?(type|input)\//, "");
               return `- ${escapeHtml(cleanedSource)}`;
             })
             .join("<br>");
@@ -1948,7 +2022,10 @@ function _recurseUploadMDS(thefullfile, chunk, callback){
       function adjustTextareaHeight() {
         const textarea = document.getElementById("chat-input");
         textarea.style.height = "auto";
-        const newHeight = Math.min(textarea.scrollHeight, window.innerHeight / 3);
+        const newHeight = Math.min(
+          textarea.scrollHeight,
+          window.innerHeight / 3
+        );
         textarea.style.height = newHeight + "px";
       }
 
@@ -1961,56 +2038,58 @@ function _recurseUploadMDS(thefullfile, chunk, callback){
       adjustTextareaHeight();
 
       function showAbout() {
-        document.getElementById("info-modal").style.display = "block";
+        document.getElementById("info-modal").style.display = "flex";
       }
 
-      window.onclick = function(event) {
+      window.onclick = function (event) {
         if (event.target == document.getElementById("info-modal")) {
           document.getElementById("info-modal").style.display = "none";
         }
-      }
+      };
 
       function compileMiniDapp(codeContent) {
-        const modal = document.getElementById('compile-modal');
-        const span = modal.querySelector('.close');
-        const form = document.getElementById('compile-form');
-        const nameInput = document.getElementById('dapp-name');
-        const directInstallBtn = document.getElementById('direct-install');
-        const downloadBoilerplateBtn = document.getElementById('download-boilerplate');
+        const modal = document.getElementById("compile-modal");
+        const span = modal.querySelector(".close");
+        const form = document.getElementById("compile-form");
+        const nameInput = document.getElementById("dapp-name");
+        const directInstallBtn = document.getElementById("direct-install");
+        const downloadBoilerplateBtn = document.getElementById(
+          "download-boilerplate"
+        );
 
         // Set a default name with timestamp
         nameInput.value = "MyMiniDapp_" + Date.now();
 
-        modal.style.display = "block";
+        modal.style.display = "flex";
 
-        span.onclick = function() {
+        span.onclick = function () {
           modal.style.display = "none";
-        }
+        };
 
-        window.onclick = function(event) {
+        window.onclick = function (event) {
           if (event.target == modal) {
             modal.style.display = "none";
           }
-        }
+        };
 
-        directInstallBtn.onclick = function() {
+        directInstallBtn.onclick = function () {
           const dappDetails = getDappDetails();
           createAndInstallMiniDapp(codeContent, dappDetails);
           modal.style.display = "none";
-        }
+        };
 
-        downloadBoilerplateBtn.onclick = function() {
+        downloadBoilerplateBtn.onclick = function () {
           const dappDetails = getDappDetails();
           createAndDownloadMiniDapp(codeContent, dappDetails);
           modal.style.display = "none";
-        }
+        };
       }
 
       function getDappDetails() {
         return {
-          name: document.getElementById('dapp-name').value,
-          description: document.getElementById('dapp-description').value,
-          version: document.getElementById('dapp-version').value
+          name: document.getElementById("dapp-name").value,
+          description: document.getElementById("dapp-description").value,
+          version: document.getElementById("dapp-version").value,
         };
       }
 
@@ -2022,16 +2101,15 @@ function _recurseUploadMDS(thefullfile, chunk, callback){
         const zip = new JSZip();
         addFilesToZip(zip, htmlContent, dappConfContent, sanitizedName);
 
-        zip.generateAsync({type:"blob"})
-          .then(function(content) {
-            const reader = new FileReader();
-            reader.readAsArrayBuffer(content);
-            reader.onloadend = function() {
-              const arrayBuffer = reader.result;
-              const hexString = arrayBufferToHexString(arrayBuffer);
-              installMiniDapp(hexString, sanitizedName);
-            }
-          });
+        zip.generateAsync({ type: "blob" }).then(function (content) {
+          const reader = new FileReader();
+          reader.readAsArrayBuffer(content);
+          reader.onloadend = function () {
+            const arrayBuffer = reader.result;
+            const hexString = arrayBufferToHexString(arrayBuffer);
+            installMiniDapp(hexString, sanitizedName);
+          };
+        });
       }
 
       function createAndDownloadMiniDapp(codeContent, dappDetails) {
@@ -2042,16 +2120,15 @@ function _recurseUploadMDS(thefullfile, chunk, callback){
         const zip = new JSZip();
         addFilesToZip(zip, htmlContent, dappConfContent, sanitizedName);
 
-        zip.generateAsync({type:"blob"})
-          .then(function(content) {
-            const url = URL.createObjectURL(content);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = sanitizedName + ".zip";
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-          });
+        zip.generateAsync({ type: "blob" }).then(function (content) {
+          const url = URL.createObjectURL(content);
+          const link = document.createElement("a");
+          link.href = url;
+          link.download = sanitizedName + ".zip";
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        });
       }
 
       function generateHtmlContent(codeContent, dappName) {
@@ -2063,7 +2140,7 @@ function _recurseUploadMDS(thefullfile, chunk, callback){
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>${dappName}</title>
     <script type="text/javascript" src="mds.js"><\/script>
-</head>
+<\/head>
 <body>
     <pre><code>${codeContent}</code></pre>
     <script>
@@ -2073,8 +2150,8 @@ function _recurseUploadMDS(thefullfile, chunk, callback){
             }
         });
     <\/script>
-</body>
-</html>
+<\/body>
+<\/html>
 `;
       }
 
@@ -2084,64 +2161,81 @@ function _recurseUploadMDS(thefullfile, chunk, callback){
           icon: "brain.png",
           version: dappDetails.version,
           description: dappDetails.description || "Generated MiniDapp",
-          browser: "internal"
+          browser: "internal",
         };
       }
 
       function sanitizeName(name) {
-        return name.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+        return name.replace(/[^a-z0-9]/gi, "_").toLowerCase();
       }
 
       function addFilesToZip(zip, htmlContent, dappConfContent, sanitizedName) {
         zip.file("index.html", htmlContent);
         zip.file("dapp.conf", JSON.stringify(dappConfContent, null, 2));
-        const mdsJsContent = document.getElementById('mdsJsContent').textContent;
+        const mdsJsContent =
+          document.getElementById("mdsJsContent").textContent;
         zip.file("mds.js", mdsJsContent);
       }
 
       function arrayBufferToHexString(arrayBuffer) {
         return Array.from(new Uint8Array(arrayBuffer))
-          .map(b => b.toString(16).padStart(2, "0"))
+          .map((b) => b.toString(16).padStart(2, "0"))
           .join("");
       }
 
       function installMiniDapp(hexZipContent, dappName) {
-        MDS.file.savebinary(dappName + ".mds.zip", hexZipContent, function(resp) {
-          if (resp.status) {
-            MDS.file.getpath(dappName + ".mds.zip", function(pathResp) {
-              if (pathResp.status) {
-                const filePath = pathResp.response.getpath.path;
-                const installCommand = "mds action:install file:" + filePath;
-                MDS.cmd(installCommand, function(installResp) {
-                  if (installResp.status) {
-                    showNotification("MiniDapp installed successfully!", "success");
-                  } else {
-                    showNotification("Failed to install MiniDapp: " + installResp.error, "error");
-                  }
-                  MDS.file.delete(dappName + ".mds.zip", function() {});
-                });
-              } else {
-                showNotification("Failed to get file path: " + pathResp.error, "error");
-              }
-            });
-          } else {
-            showNotification("Failed to save zip file: " + resp.error, "error");
+        MDS.file.savebinary(
+          dappName + ".mds.zip",
+          hexZipContent,
+          function (resp) {
+            if (resp.status) {
+              MDS.file.getpath(dappName + ".mds.zip", function (pathResp) {
+                if (pathResp.status) {
+                  const filePath = pathResp.response.getpath.path;
+                  const installCommand = "mds action:install file:" + filePath;
+                  MDS.cmd(installCommand, function (installResp) {
+                    if (installResp.status) {
+                      showNotification(
+                        "MiniDapp installed successfully!",
+                        "success"
+                      );
+                    } else {
+                      showNotification(
+                        "Failed to install MiniDapp: " + installResp.error,
+                        "error"
+                      );
+                    }
+                    MDS.file.delete(dappName + ".mds.zip", function () {});
+                  });
+                } else {
+                  showNotification(
+                    "Failed to get file path: " + pathResp.error,
+                    "error"
+                  );
+                }
+              });
+            } else {
+              showNotification(
+                "Failed to save zip file: " + resp.error,
+                "error"
+              );
+            }
           }
-        });
+        );
       }
 
       function showNotification(message, type) {
-        const notification = document.getElementById('notification');
+        const notification = document.getElementById("notification");
         notification.textContent = message;
-        notification.className = 'notification ' + type + ' show';
-        
+        notification.className = "notification " + type + " show";
+
         setTimeout(() => {
-          notification.className = 'notification ' + type;
+          notification.className = "notification " + type;
         }, 3000);
       }
 
       function openDonateModal() {
-        document.getElementById("donateModal").style.display = "block";
+        document.getElementById("donateModal").style.display = "flex";
       }
 
       function closeDonateModal() {
@@ -2149,13 +2243,16 @@ function _recurseUploadMDS(thefullfile, chunk, callback){
       }
 
       function donate(amount) {
-        const address = "MxG0814S8TAB4D57Y0Z6V8BUEW0YP3AN6G127VNPC8CKY72B6UMU1Y3C205ZE2P";
-        
-        MDS.cmd(`send amount:${amount} address:${address}`, function(res) {
+        const address =
+          "MxG0814S8TAB4D57Y0Z6V8BUEW0YP3AN6G127VNPC8CKY72B6UMU1Y3C205ZE2P";
+
+        MDS.cmd(`send amount:${amount} address:${address}`, function (res) {
           if (res.status) {
             alert(`Thank you for your donation of ${amount} Minima!`);
           } else if (res.pending) {
-            alert("Transaction is pending. Please check your notifications to approve.");
+            alert(
+              "Transaction is pending. Please check your notifications to approve."
+            );
           } else {
             alert("Transaction failed. Please try again.");
           }
@@ -2164,7 +2261,7 @@ function _recurseUploadMDS(thefullfile, chunk, callback){
       }
 
       // Close modal when clicking outside
-      window.onclick = function(event) {
+      window.onclick = function (event) {
         if (event.target == document.getElementById("donateModal")) {
           closeDonateModal();
         }
@@ -2177,19 +2274,22 @@ function _recurseUploadMDS(thefullfile, chunk, callback){
         if (event.target == document.getElementById("diyCompileModal")) {
           closeDIYCompileModal();
         }
-      }
+      };
 
       function toggleMenu() {
-        document.getElementById('sideMenu').classList.toggle('open');
+        document.getElementById("sideMenu").classList.toggle("open");
       }
 
       // Close menu when clicking outside
-      document.addEventListener('click', function(event) {
-        const sideMenu = document.getElementById('sideMenu');
-        const burgerButton = document.getElementById('burger-button');
-        
-        if (!sideMenu.contains(event.target) && !burgerButton.contains(event.target)) {
-          sideMenu.classList.remove('open');
+      document.addEventListener("click", function (event) {
+        const sideMenu = document.getElementById("sideMenu");
+        const burgerButton = document.getElementById("burger-button");
+
+        if (
+          !sideMenu.contains(event.target) &&
+          !burgerButton.contains(event.target)
+        ) {
+          sideMenu.classList.remove("open");
         }
       });
 
@@ -2199,7 +2299,7 @@ function _recurseUploadMDS(thefullfile, chunk, callback){
       }
 
       function showDIYCompile() {
-        document.getElementById("diyCompileModal").style.display = "block";
+        document.getElementById("diyCompileModal").style.display = "flex";
       }
 
       function compileDIYCode() {
@@ -2212,5 +2312,5 @@ function _recurseUploadMDS(thefullfile, chunk, callback){
         document.getElementById("diyCompileModal").style.display = "none";
       }
     </script>
-</body>
+  </body>
 </html>
