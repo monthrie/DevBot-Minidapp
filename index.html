@@ -788,7 +788,22 @@
         background-color: #2563eb;
       }
 
+      nav {
+        background-color: var(--background2);
+        padding: 10px 20px;
+        text-align: center;
+      }
 
+      nav a {
+        color: var(--foreground);
+        text-decoration: none;
+        margin: 0 10px;
+        font-weight: bold;
+      }
+
+      nav a:hover {
+        color: var(--primary);
+      }
     </style>
   </head>
   <body>
@@ -809,10 +824,16 @@
       </div>
     </div>
 
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="page2.html">Page 2</a>
+    </nav>
+
     <div class="side-menu" id="sideMenu">
       <a href="#" onclick="showAbout()">About</a>
       <a href="#" onclick="openDonateModal()">Donate</a>
       <a href="#" onclick="showSettings()">Settings</a>
+      <a href="page2.html">Go to Page 2</a>
     </div>
 
     <div class="chat-container" id="chat-body">

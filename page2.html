@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Page 2 - DevBot</title>
+    <script type="text/javascript" src="mds.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>
+    <style>
+        :root {
+            --background: #0a0f1c;
+            --background2: #0f172a;
+            --foreground: #e2e8f0;
+            --primary: #3b82f6;
+            --secondary: #64748b;
+            --accent: #f59e0b;
+            --success: #10b981;
+            --error: #ef4444;
+        }
+
+        body {
+            font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+            background-color: var(--background);
+            color: var(--foreground);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .title-banner {
+            background-color: var(--background2);
+            padding: 20px;
+            text-align: center;
+        }
+
+        .title {
+            font-size: 1.5rem;
+            color: var(--primary);
+            margin: 0;
+        }
+
+        nav {
+            background-color: var(--background2);
+            padding: 10px 20px;
+            text-align: center;
+        }
+
+        nav a {
+            color: var(--foreground);
+            text-decoration: none;
+            margin: 0 10px;
+            font-weight: bold;
+        }
+
+        nav a:hover {
+            color: var(--primary);
+        }
+
+        .content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        #diyCompileInput {
+            width: 60%;
+            height: 60vh;
+            margin-bottom: 20px;
+            padding: 10px;
+            font-family: monospace;
+            font-size: 14px;
+            resize: none;
+            background-color: var(--background2);
+            color: var(--foreground);
+            border: 1px solid var(--secondary);
+        }
+
+        .compile-button {
+            padding: 10px 20px;
+            background-color: var(--primary);
+            color: #ffffff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .compile-button:hover {
+            background-color: #2563eb;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background-color: var(--background);
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid var(--secondary);
+            width: 80%;
+            max-width: 500px;
+        }
+
+        .close {
+            color: var(--secondary);
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: var(--primary);
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        #compile-form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        #compile-form label {
+            margin-top: 10px;
+        }
+
+        #compile-form input {
+            margin-bottom: 10px;
+            padding: 5px;
+            border: 1px solid var(--secondary);
+            background-color: var(--background2);
+            color: var(--foreground);
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="title-banner">
+        <h1 class="title">DevBot v0.2.1 [MINIMA] - Page 2</h1>
+    </div>
+
+    <nav>
+        <a href="index.html">Home</a>
+        <a href="page2.html">Page 2</a>
+    </nav>
+
+    <div class="content">
+        <textarea id="diyCompileInput" placeholder="Enter your HTML code here..."></textarea>
+        <button onclick="compileDIYCode()" class="compile-button">Compile MiniDapp</button>
+    </div>
+
+    <div id="compile-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>MiniDapp Details</h2>
+            <form id="compile-form">
+                <label for="dapp-name">MiniDapp Name:</label>
+                <input type="text" id="dapp-name" required />
+                <label for="dapp-description">Description:</label>
+                <input type="text" id="dapp-description" />
+                <label for="dapp-version">Version:</label>
+                <input type="text" id="dapp-version" value="0.1.0" />
+                <div class="button-container">
+                    <button type="button" id="direct-install" class="compile-button">Install on MiniHub</button>
+                    <button type="button" id="download-boilerplate" class="compile-button">Download MiniDapp ZIP</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const modal = document.getElementById("compile-modal");
+        const span = modal.querySelector(".close");
+
+        span.onclick = function() {
+            modal.style.display = "none";
+        }
+
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+
+        function compileDIYCode() {
+            const code = document.getElementById("diyCompileInput").value;
+            compileMiniDapp(code);
+        }
+
+        function compileMiniDapp(codeContent) {
+            const nameInput = document.getElementById("dapp-name");
+            const directInstallBtn = document.getElementById("direct-install");
+            const downloadBoilerplateBtn = document.getElementById("download-boilerplate");
+
+            // Set a default name with timestamp
+            nameInput.value = "MyMiniDapp_" + Date.now();
+            document.getElementById("dapp-description").value = "";
+            document.getElementById("dapp-version").value = "0.1.0";
+
+            modal.style.display = "block";
+
+            directInstallBtn.onclick = function () {
+                console.log("Direct Install button clicked");
+                const dappDetails = getDappDetails();
+                console.log("Dapp details:", dappDetails);
+                createAndInstallMiniDapp(codeContent, dappDetails);
+                modal.style.display = "none";
+            };
+
+            downloadBoilerplateBtn.onclick = function () {
+                console.log("Download Boilerplate button clicked");
+                const dappDetails = getDappDetails();
+                console.log("Dapp details:", dappDetails);
+                createAndDownloadMiniDapp(codeContent, dappDetails);
+                modal.style.display = "none";
+            };
+        }
+
+        function getDappDetails() {
+            return {
+                name: document.getElementById("dapp-name").value,
+                description: document.getElementById("dapp-description").value,
+                version: document.getElementById("dapp-version").value,
+            };
+        }
+
+        function createAndInstallMiniDapp(codeContent, dappDetails) {
+            const htmlContent = generateHtmlContent(codeContent, dappDetails.name);
+            const dappConfContent = generateDappConf(dappDetails);
+            const sanitizedName = sanitizeName(dappDetails.name);
+
+            const zip = new JSZip();
+            addFilesToZip(zip, htmlContent, dappConfContent, sanitizedName);
+
+            zip.generateAsync({ type: "blob" }).then(function (content) {
+                const reader = new FileReader();
+                reader.readAsArrayBuffer(content);
+                reader.onloadend = function () {
+                    const arrayBuffer = reader.result;
+                    const hexString = arrayBufferToHexString(arrayBuffer);
+                    installMiniDapp(hexString, sanitizedName);
+                };
+            });
+        }
+
+        function createAndDownloadMiniDapp(codeContent, dappDetails) {
+            const htmlContent = generateHtmlContent(codeContent, dappDetails.name);
+            const dappConfContent = generateDappConf(dappDetails);
+            const sanitizedName = sanitizeName(dappDetails.name);
+
+            const zip = new JSZip();
+            addFilesToZip(zip, htmlContent, dappConfContent, sanitizedName);
+
+            zip.generateAsync({ type: "blob" }).then(function (content) {
+                const url = URL.createObjectURL(content);
+                const link = document.createElement("a");
+                link.href = url;
+                link.download = sanitizedName + ".zip";
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            });
+        }
+
+        function generateHtmlContent(codeContent, dappName) {
+            return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${dappName}</title>
+    <script type="text/javascript" src="mds.js"><\/script>
+<\/head>
+<body>
+    <pre><code>${codeContent}</code></pre>
+    <script>
+        MDS.init(function(msg) {
+            if (msg.event === "inited") {
+                console.log("MDS initialized");
+            }
+        });
+    <\/script>
+<\/body>
+<\/html>
+`;
+        }
+
+        function generateDappConf(dappDetails) {
+            return {
+                name: dappDetails.name,
+                icon: "brain.png",
+                version: dappDetails.version,
+                description: dappDetails.description || "Generated MiniDapp",
+                browser: "internal",
+            };
+        }
+
+        function sanitizeName(name) {
+            return name.replace(/[^a-z0-9]/gi, "_").toLowerCase();
+        }
+
+        function addFilesToZip(zip, htmlContent, dappConfContent, sanitizedName) {
+            zip.file("index.html", htmlContent);
+            zip.file("dapp.conf", JSON.stringify(dappConfContent, null, 2));
+            // Note: You'll need to provide the content for mds.js
+            // const mdsJsContent = document.getElementById("mdsJsContent").textContent;
+            // zip.file("mds.js", mdsJsContent);
+        }
+
+        function arrayBufferToHexString(buffer) {
+            return Array.from(new Uint8Array(buffer))
+                .map(b => b.toString(16).padStart(2, "0"))
+                .join("");
+        }
+
+        function installMiniDapp(hexString, name) {
+            MDS.cmd("minidapp", function(res) {
+                if (res.status) {
+                    console.log("MiniDapp installed successfully:", name);
+                } else {
+                    console.error("Failed to install MiniDapp:", res.error);
+                }
+            }, "install " + name + " " + hexString);
+        }
+
+        MDS.init(function(msg) {
+            if (msg.event === "inited") {
+                console.log("MDS initialized on Page 2");
+            }
+        });
+    </script>
+</body>
+</html>
