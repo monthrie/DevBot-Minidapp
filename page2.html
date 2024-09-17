@@ -6,6 +6,12 @@
     <title>Page 2 - DevBot</title>
     <script type="text/javascript" src="mds.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.0/codemirror.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.0/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.0/mode/htmlmixed/htmlmixed.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.0/mode/xml/xml.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.0/mode/javascript/javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.0/mode/css/css.min.js"></script>
     <style>
         :root {
             --background: #0a0f1c;
@@ -169,6 +175,11 @@
             justify-content: space-between;
             margin-top: 20px;
         }
+
+        .CodeMirror {
+            height: 100%;
+            font-size: 14px;
+        }
     </style>
 </head>
 <body>
@@ -222,6 +233,43 @@
         window.onclick = function(event) {
             if (event.target == modal) {
                 modal.style.display = "none";
+            }
+        }
+
+        let editor;
+        document.addEventListener('DOMContentLoaded', (event) => {
+            editor = CodeMirror.fromTextArea(document.getElementById("diyCompileInput"), {
+                mode: "htmlmixed",
+                theme: "default",
+                lineNumbers: true,
+                autoCloseTags: true,
+                autoCloseBrackets: true,
+                matchBrackets: true,
+                indentUnit: 4,
+                tabSize: 4,
+                indentWithTabs: true,
+                lineWrapping: true
+            });
+
+            editor.on("change", function() {
+                document.getElementById("diyCompileInput").value = editor.getValue();
+            });
+        });
+
+        function toggleView() {
+            const editorContainer = document.querySelector(".CodeMirror");
+            const preview = document.getElementById("preview");
+            const toggleButton = document.getElementById("toggleButton");
+
+            if (editorContainer.style.display !== "none") {
+                editorContainer.style.display = "none";
+                preview.style.display = "block";
+                preview.srcdoc = editor.getValue();
+                toggleButton.textContent = "Show Code";
+            } else {
+                editorContainer.style.display = "block";
+                preview.style.display = "none";
+                toggleButton.textContent = "Show Preview";
             }
         }
 
@@ -349,6 +397,9 @@
             // Note: You'll need to provide the content for mds.js
             // const mdsJsContent = document.getElementById("mdsJsContent").textContent;
             // zip.file("mds.js", mdsJsContent);
+            // Note: You'll need to provide the content for mds.js
+            // const mdsJsContent = document.getElementById("mdsJsContent").textContent;
+            // zip.file("mds.js", mdsJsContent);
         }
 
         function arrayBufferToHexString(buffer) {
@@ -364,7 +415,21 @@
                 } else {
                     console.error("Failed to install MiniDapp:", res.error);
                 }
-            }, "install " + name + " " + hexString);
+        function toggleView() {
+            const editor = document.getElementById("diyCompileInput");
+            const preview = document.getElementById("preview");
+            const toggleButton = document.getElementById("toggleButton");
+
+            if (editor.style.display !== "none") {
+                editor.style.display = "none";
+                preview.style.display = "block";
+                preview.srcdoc = editor.value;
+                toggleButton.textContent = "Show Code";
+            } else {
+                editor.style.display = "block";
+                preview.style.display = "none";
+                toggleButton.textContent = "Show Preview";
+            }
         }
 
         function toggleView() {
@@ -382,6 +447,9 @@
                 preview.style.display = "none";
                 toggleButton.textContent = "Show Preview";
             }
+        }
+
+            }, "install " + name + " " + hexString);
         }
 
         MDS.init(function(msg) {
