@@ -60,25 +60,39 @@
         }
 
         .content {
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
             padding: 20px;
         }
 
-        #diyCompileInput {
-            width: 60%;
-            height: 60vh;
+        #editor-container {
+            width: 100%;
+            height: 70vh;
             margin-bottom: 20px;
-            padding: 10px;
-            font-family: monospace;
-            font-size: 14px;
-            resize: none;
+            position: relative;
+        }
+
+        #diyCompileInput,
+        #preview {
+            width: 100%;
+            height: 100%;
+            border: 1px solid var(--secondary);
             background-color: var(--background2);
             color: var(--foreground);
-            border: 1px solid var(--secondary);
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        #preview {
+            display: none;
+        }
+
+        .button-container {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
         }
 
         .compile-button {
@@ -168,8 +182,14 @@
     </nav>
 
     <div class="content">
-        <textarea id="diyCompileInput" placeholder="Enter your HTML code here..."></textarea>
-        <button onclick="compileDIYCode()" class="compile-button">Compile MiniDapp</button>
+        <div id="editor-container">
+            <textarea id="diyCompileInput" placeholder="Enter your HTML code here..."></textarea>
+            <iframe id="preview"></iframe>
+        </div>
+        <div class="button-container">
+            <button onclick="toggleView()" class="compile-button" id="toggleButton">Show Preview</button>
+            <button onclick="compileDIYCode()" class="compile-button">Compile MiniDapp</button>
+        </div>
     </div>
 
     <div id="compile-modal" class="modal">
@@ -345,6 +365,23 @@
                     console.error("Failed to install MiniDapp:", res.error);
                 }
             }, "install " + name + " " + hexString);
+        }
+
+        function toggleView() {
+            const editor = document.getElementById("diyCompileInput");
+            const preview = document.getElementById("preview");
+            const toggleButton = document.getElementById("toggleButton");
+
+            if (editor.style.display !== "none") {
+                editor.style.display = "none";
+                preview.style.display = "block";
+                preview.srcdoc = editor.value;
+                toggleButton.textContent = "Show Code";
+            } else {
+                editor.style.display = "block";
+                preview.style.display = "none";
+                toggleButton.textContent = "Show Preview";
+            }
         }
 
         MDS.init(function(msg) {
