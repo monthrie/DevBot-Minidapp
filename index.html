@@ -323,19 +323,30 @@
         position: absolute;
         top: 8px;
         right: 8px;
-        padding: 4px 8px;
-        background-color: var(--primary);
-        color: #ffffff;
+        display: flex;
+        align-items: center;
+        background-color: rgba(58, 58, 58, 0.8);
         border: none;
         border-radius: 4px;
+        padding: 6px 10px;
         cursor: pointer;
-        font-size: 0.8rem;
-        font-weight: 600;
-        transition: all 0.3s ease;
+        transition: background-color 0.3s ease;
       }
 
       .copy-button:hover {
-        background-color: #2563eb;
+        background-color: rgba(74, 74, 74, 0.9);
+      }
+
+      .copy-icon {
+        width: 14px;
+        height: 14px;
+        margin-right: 6px;
+        fill: #ffffff;
+      }
+
+      .copy-text {
+        color: #ffffff;
+        font-size: 12px;
       }
 
       .code-container {
@@ -1906,6 +1917,13 @@
       function copyToClipboard(text) {
         navigator.clipboard.writeText(text).then(
           function () {
+            const copyButton = event.target.closest('.copy-button');
+            const copyText = copyButton.querySelector('.copy-text');
+            const originalText = copyText.textContent;
+            copyText.textContent = 'Copied!';
+            setTimeout(() => {
+              copyText.textContent = originalText;
+            }, 2000);
             showNotification("Copied to clipboard!", "success");
           },
           function (err) {
@@ -1945,7 +1963,12 @@
 
             const copyButton = document.createElement("button");
             copyButton.className = "copy-button";
-            copyButton.textContent = "Copy";
+            copyButton.innerHTML = `
+              <svg class="copy-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>
+              </svg>
+              <span class="copy-text">Copy</span>
+            `;
             copyButton.onclick = function () {
               copyToClipboard(code);
             };
