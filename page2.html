@@ -75,9 +75,10 @@
 
         #editor-container {
             width: 100%;
-            height: 70vh;
+            height: 60vh;
             margin-bottom: 20px;
             position: relative;
+            overflow: hidden; /* Add this to prevent overflow */
         }
 
         #diyCompileInput,
@@ -97,8 +98,8 @@
         }
 
         .button-container {
+            margin-top: 20px; /* Add some space between editor and button */
             display: flex;
-            gap: 10px;
             justify-content: center;
         }
 
@@ -178,8 +179,76 @@
         }
 
         .CodeMirror {
-            height: 100%;
+            height: 100% !important; /* Force CodeMirror to take full height of container */
             font-size: 14px;
+            position: absolute; /* Add this */
+            top: 0; /* Add this */
+            left: 0; /* Add this */
+            right: 0; /* Add this */
+            bottom: 0; /* Add this */
+        }
+
+        .CodeMirror-scroll {
+            max-height: 100%; /* Add this to enable scrolling */
+        }
+
+        .code-banner {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #2c2c2c;
+            padding: 5px 10px;
+            font-size: 14px;
+            color: #888;
+        }
+
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            background-color: #3c3c3c;
+            border-radius: 15px;
+            padding: 2px;
+            position: relative;
+        }
+
+        .toggle-option {
+            padding: 4px 8px;
+            cursor: pointer;
+            color: #888;
+            font-size: 12px;
+            transition: all 0.3s ease;
+            z-index: 1;
+        }
+
+        .toggle-switch {
+            position: absolute;
+            width: 50%;
+            height: calc(100% - 4px);
+            background-color: #4c4c4c;
+            border-radius: 12px;
+            transition: 0.3s;
+        }
+
+        .toggle-option.active {
+            color: white;
+        }
+
+        #editor-container {
+            position: relative;
+        }
+
+        #code-view, #preview {
+            position: absolute;
+            top: 30px;
+            left: 0;
+            right: 0;
+            bottom: 0;
+        }
+
+        #preview {
+            border: none;
+            width: 100%;
+            height: calc(100% - 30px);
         }
     </style>
 </head>
@@ -195,11 +264,20 @@
 
     <div class="content">
         <div id="editor-container">
-            <textarea id="diyCompileInput" placeholder="Enter your HTML code here..."></textarea>
+            <div class="code-banner">
+                <span>HTML</span>
+                <div class="toggle-container" id="viewToggle">
+                    <div class="toggle-switch"></div>
+                    <span class="toggle-option active" data-view="code">Code</span>
+                    <span class="toggle-option" data-view="preview">Preview</span>
+                </div>
+            </div>
+            <div id="code-view">
+                <textarea id="diyCompileInput" placeholder="Enter your HTML code here..."></textarea>
+            </div>
             <iframe id="preview"></iframe>
         </div>
         <div class="button-container">
-            <button onclick="toggleView()" class="compile-button" id="toggleButton">Show Preview</button>
             <button onclick="compileDIYCode()" class="compile-button">Compile MiniDapp</button>
         </div>
     </div>
@@ -254,23 +332,48 @@
 
             editor.on("change", function() {
                 document.getElementById("diyCompileInput").value = editor.getValue();
+                if (!isCodeActive) {
+                    preview.srcdoc = editor.getValue();
+                }
             });
         });
 
-        function toggleView() {
-            const editorContainer = document.querySelector(".CodeMirror");
-            const preview = document.getElementById("preview");
-            const toggleButton = document.getElementById("toggleButton");
+        const viewToggle = document.getElementById('viewToggle');
+        const toggleSwitch = document.querySelector('.toggle-switch');
+        const toggleOptions = document.querySelectorAll('.toggle-option');
+        const codeView = document.getElementById("code-view");
+        const preview = document.getElementById("preview");
 
-            if (editorContainer.style.display !== "none") {
-                editorContainer.style.display = "none";
+        let isCodeActive = true;
+
+        toggleOptions.forEach(option => {
+            option.addEventListener('click', function() {
+                isCodeActive = this.dataset.view === 'code';
+                updateToggleState();
+            });
+        });
+
+        function updateToggleState() {
+            if (isCodeActive) {
+                toggleSwitch.style.transform = 'translateX(0)';
+                toggleOptions[0].classList.add('active');
+                toggleOptions[1].classList.remove('active');
+            } else {
+                toggleSwitch.style.transform = 'translateX(100%)';
+                toggleOptions[0].classList.remove('active');
+                toggleOptions[1].classList.add('active');
+            }
+            toggleView();
+        }
+
+        function toggleView() {
+            if (isCodeActive) {
+                codeView.style.display = "block";
+                preview.style.display = "none";
+            } else {
+                codeView.style.display = "none";
                 preview.style.display = "block";
                 preview.srcdoc = editor.getValue();
-                toggleButton.textContent = "Show Code";
-            } else {
-                editorContainer.style.display = "block";
-                preview.style.display = "none";
-                toggleButton.textContent = "Show Preview";
             }
         }
 
@@ -398,9 +501,6 @@
             // Note: You'll need to provide the content for mds.js
             // const mdsJsContent = document.getElementById("mdsJsContent").textContent;
             // zip.file("mds.js", mdsJsContent);
-            // Note: You'll need to provide the content for mds.js
-            // const mdsJsContent = document.getElementById("mdsJsContent").textContent;
-            // zip.file("mds.js", mdsJsContent);
         }
 
         function arrayBufferToHexString(buffer) {
@@ -416,40 +516,6 @@
                 } else {
                     console.error("Failed to install MiniDapp:", res.error);
                 }
-        function toggleView() {
-            const editor = document.getElementById("diyCompileInput");
-            const preview = document.getElementById("preview");
-            const toggleButton = document.getElementById("toggleButton");
-
-            if (editor.style.display !== "none") {
-                editor.style.display = "none";
-                preview.style.display = "block";
-                preview.srcdoc = editor.value;
-                toggleButton.textContent = "Show Code";
-            } else {
-                editor.style.display = "block";
-                preview.style.display = "none";
-                toggleButton.textContent = "Show Preview";
-            }
-        }
-
-        function toggleView() {
-            const editor = document.getElementById("diyCompileInput");
-            const preview = document.getElementById("preview");
-            const toggleButton = document.getElementById("toggleButton");
-
-            if (editor.style.display !== "none") {
-                editor.style.display = "none";
-                preview.style.display = "block";
-                preview.srcdoc = editor.value;
-                toggleButton.textContent = "Show Code";
-            } else {
-                editor.style.display = "block";
-                preview.style.display = "none";
-                toggleButton.textContent = "Show Preview";
-            }
-        }
-
             }, "install " + name + " " + hexString);
         }
 
