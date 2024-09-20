@@ -905,7 +905,9 @@
           <label for="dapp-version">Version:</label>
           <input type="text" id="dapp-version" value="0.1.0" />
           <div class="button-container">
-            <button type="button" id="direct-install">Install on MiniHub</button>
+            <button type="button" id="direct-install">
+              Install on MiniHub
+            </button>
             <button type="button" id="download-boilerplate">
               Download MiniDapp ZIP
             </button>
@@ -1938,10 +1940,10 @@
       function copyToClipboard(text) {
         navigator.clipboard.writeText(text).then(
           function () {
-            const copyButton = event.target.closest('.copy-button');
-            const copyText = copyButton.querySelector('.copy-text');
+            const copyButton = event.target.closest(".copy-button");
+            const copyText = copyButton.querySelector(".copy-text");
             const originalText = copyText.textContent;
-            copyText.textContent = 'Copied!';
+            copyText.textContent = "Copied!";
             setTimeout(() => {
               copyText.textContent = originalText;
             }, 2000);
@@ -1967,10 +1969,7 @@
             const language = firstLine.match(/^[a-zA-Z0-9]+$/)
               ? firstLine
               : "plaintext";
-            const code =
-              language === "plaintext"
-                ? codeContent
-                : codeContent.split("\n").slice(1).join("\n");
+            const code = codeContent;
 
             const preElement = document.createElement("pre");
             preElement.className = `language-${language}`;
@@ -2124,7 +2123,6 @@
 
         span.onclick = function () {
           modal.style.display = "none";
-
         };
 
         window.onclick = function (event) {

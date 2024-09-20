@@ -200,7 +200,6 @@
             padding: 8px 10px;
             font-size: 14px;
             color: #888;
-            margin-bottom: 10px; /* Add space below the banner */
         }
 
         pre {
@@ -226,7 +225,6 @@
         }
 
         .toggle-switch {
-            position: absolute;
             width: 50%;
             height: calc(100% - 4px);
             background-color: #4c4c4c;
@@ -239,22 +237,16 @@
         }
 
         #editor-container {
-            position: relative;
+            display: flex;
+            flex-direction: column;
         }
 
         #code-view, #preview {
-            position: absolute;
-            top: 30px;
-            left: 0;
-            right: 0;
-            bottom: 0;
+            border: none;
+            height: 100%;
+            width: 100%;
         }
 
-        #preview {
-            border: none;
-            width: 100%;
-            height: calc(100% - 30px);
-        }
     </style>
 </head>
 <body>
@@ -268,15 +260,15 @@
     </nav>
 
     <div class="content">
-        <div id="editor-container">
-            <div class="code-banner">
-                <span>HTML</span>
-                <div class="toggle-container" id="viewToggle">
-                    <div class="toggle-switch"></div>
-                    <span class="toggle-option active" data-view="code">Code</span>
-                    <span class="toggle-option" data-view="preview">Preview</span>
-                </div>
+        <div class="code-banner">
+            <span>HTML</span>
+            <div class="toggle-container" id="viewToggle">
+                <div class="toggle-switch"></div>
+                <span class="toggle-option active" data-view="code">Code</span>
+                <span class="toggle-option" data-view="preview">Preview</span>
             </div>
+        </div>
+        <div id="editor-container">
             <div id="code-view">
                 <textarea id="diyCompileInput" placeholder="Enter your HTML code here..."></textarea>
             </div>
