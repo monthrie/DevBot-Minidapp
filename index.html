@@ -1928,10 +1928,7 @@
             const language = firstLine.match(/^[a-zA-Z0-9]+$/)
               ? firstLine
               : "plaintext";
-            const code =
-              language === "plaintext"
-                ? codeContent
-                : codeContent.split("\n").slice(1).join("\n");
+            const code = codeContent;
 
             const preElement = document.createElement("pre");
             preElement.className = `language-${language}`;
