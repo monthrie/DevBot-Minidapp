@@ -129,7 +129,7 @@
 
       .input-row {
         display: flex;
-        align-items: flex-start;
+        align-items: flex-end;
         gap: 10px;
         position: relative;
       }
@@ -1947,15 +1947,19 @@
               copyToClipboard(code);
             };
 
-            const compileButton = document.createElement("button");
-            compileButton.className = "compile-button";
-            compileButton.textContent = "Compile MiniDapp";
-            compileButton.onclick = function () {
-              compileMiniDapp(code);
-            };
-
             codeContainer.appendChild(copyButton);
-            codeContainer.appendChild(compileButton);
+
+            // Check if the code block is an entire HTML file
+            if (isEntireHtmlFile(code)) {
+              const compileButton = document.createElement("button");
+              compileButton.className = "compile-button";
+              compileButton.textContent = "Compile MiniDapp";
+              compileButton.onclick = function () {
+                compileMiniDapp(code);
+              };
+              codeContainer.appendChild(compileButton);
+            }
+
             codeContainer.appendChild(preElement);
             preElement.appendChild(codeElement);
             messageElement.appendChild(codeContainer);
@@ -2014,6 +2018,16 @@
         chatBody.insertBefore(messageElement, chatBody.firstChild);
 
         Prism.highlightAllUnder(messageElement);
+      }
+
+      // Add this new function to check if the code is an entire HTML file
+      function isEntireHtmlFile(code) {
+        const trimmedCode = code.trim().toLowerCase();
+        return (
+          trimmedCode.startsWith("<!doctype html>") ||
+          trimmedCode.startsWith("<html") ||
+          (trimmedCode.includes("<html") && trimmedCode.includes("</html>"))
+        );
       }
 
       function adjustTextareaHeight() {
