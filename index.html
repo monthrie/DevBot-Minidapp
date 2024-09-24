@@ -499,6 +499,18 @@
         max-width: 500px;
       }
 
+      .include-previous {
+        display: flex;
+        align-items: center;
+        margin-top: 10px;
+        font-size: 0.9rem;
+        color: var(--secondary);
+      }
+
+      .include-previous input[type="checkbox"] {
+        margin-right: 5px;
+      }
+
       .close {
         color: var(--secondary);
         float: right;
@@ -822,6 +834,10 @@
         <div class="custom-placeholder" id="custom-placeholder">
           Type your question here...
         </div>
+      </div>
+      <div class="include-previous">
+        <input type="checkbox" id="include-previous-checkbox">
+        <label for="include-previous-checkbox">Include previous query/response</label>
       </div>
     </div>
 
@@ -1852,6 +1868,13 @@
         const message = inputElement.value;
         if (!message) return;
 
+        const includePrevious = document.getElementById("include-previous-checkbox").checked;
+        
+        let fullMessage = message;
+        if (includePrevious && previousQuery && previousResponse) {
+          fullMessage = `Previous query: ${previousQuery}\nPrevious response: ${previousResponse}\n\nNew query: ${message}`;
+        }
+
         displayMessage("user", message);
         inputElement.value = "";
         inputElement.style.height = "auto";
@@ -1868,7 +1891,7 @@
                 "Access-Control-Allow-Origin": "*",
               },
               body: JSON.stringify({
-                message: message,
+                message: fullMessage,
               }),
             }
           );
@@ -1893,6 +1916,10 @@
 
           // Store the response in the database
           storeChatbotResponse(data.answer);
+
+          // Update previous query and response
+          previousQuery = message;
+          previousResponse = data.answer;
         } catch (error) {
           console.error("Error:", error);
           displayMessage(
@@ -1903,6 +1930,10 @@
           document.getElementById("loading-message").style.display = "none";
         }
       }
+
+      // Add these variables at the top of your script
+      let previousQuery = null;
+      let previousResponse = null;
 
       function escapeHtml(unsafe) {
         return unsafe
