@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AA22</title>
+    <script type="text/javascript" src="mds.js"></script>
+</head>
+<body>
+    <pre><code>html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maxima Broadcast MiniDapp</title>
+    <script type="text/javascript" src="mds.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        #messageList { height: 300px; overflow-y: auto; border: 1px solid #ccc; padding: 10px; margin-bottom: 20px; }
+        input, button { margin: 5px 0; padding: 5px; }
+        #broadcastInput { width: calc(100% - 110px); }
+    </style>
+</head>
+<body>
+    <h1>Maxima Broadcast MiniDapp</h1>
+    <div id="messageList"></div>
+    <input type="text" id="broadcastInput" placeholder="Enter your broadcast message">
+    <button onclick="sendBroadcast()">Send Broadcast</button>
+
+    <script>
+        let messageList = document.getElementById('messageList');
+
+        function log(message) {
+            console.log(`[${new Date().toISOString()}] ${message}`);
+        }
+
+        function addMessage(message) {
+            log(`Adding message to UI: ${message}`);
+            let messageElement = document.createElement('p');
+            messageElement.textContent = message;
+            messageList.appendChild(messageElement);
+            messageList.scrollTop = messageList.scrollHeight;
+        }
+
+        function sendBroadcast() {
+            let message = document.getElementById('broadcastInput').value;
+            if (message.trim() === '') return;
+
+            log(`Attempting to send broadcast: ${message}`);
+            MDS.cmd(`maxima action:sendall application:Broadcast data:${message}`, function(res) {
+                log(`Broadcast send response: ${JSON.stringify(res)}`);
+                if (res.status) {
+                    addMessage(`Sent: ${message}`);
+                    document.getElementById('broadcastInput').value = '';
+                } else {
+                    addMessage(`Error sending: ${res.error}`);
+                }
+            });
+        }
+
+        function setupMaximaLogging() {
+            log("Setting up Maxima logging");
+            MDS.cmd("logs maxima:true", function(res) {
+                log(`Maxima logging setup response: ${JSON.stringify(res)}`);
+                if (res.status) {
+                    log("Maxima logging enabled successfully");
+                } else {
+                    console.error("Failed to enable Maxima logging");
+                }
+            });
+        }
+
+        function hexToString(hex) {
+            log(`Attempting to convert hex to string: ${hex}`);
+            if (hex.startsWith('0x')) hex = hex.slice(2);
+            let str = '';
+            for (let i = 0; i < hex.length; i += 2) {
+                str += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
+            }
+            log(`Converted string: ${str}`);
+            return str;
+        }
+
+        MDS.init(function(msg) {
+            log(`Received MDS event: ${JSON.stringify(msg)}`);
+            if (msg.event === "inited") {
+                log("MDS initialized");
+                setupMaximaLogging();
+            } else if (msg.event === "MAXIMA") {
+                log(`Received MAXIMA event: ${JSON.stringify(msg.data)}`);
+                if (msg.data.application === "Broadcast") {
+                    log(`Processing Broadcast message: ${msg.data.data}`);
+                    let decodedMessage;
+                    try {
+                        decodedMessage = hexToString(msg.data.data);
+                    } catch (error) {
+                        console.error(`Error decoding message: ${error}`);
+                        decodedMessage = "Error decoding message";
+                    }
+                    log(`Decoded message: ${decodedMessage}`);
+                    addMessage(`Received: ${decodedMessage}`);
+                } else {
+                    log(`Ignoring non-Broadcast MAXIMA message`);
+                }
+            } else {
+                log(`Unhandled event type: ${msg.event}`);
+            }
+        });
+
+        log("MiniDapp script loaded and initialized");
+    </script>
+</body>
+</html></code></pre>
+    <script>
+        MDS.init(function(msg) {
+            if (msg.event === "inited") {
+                console.log("MDS initialized");
+            }
+        });
+    </script>
+</body>
+</html>
