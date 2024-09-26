@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snake Game with High Scores</title>
+    <script type="text/javascript" src="mds.js"></script>
+    <style>
+        canvas {
+            border: 1px solid black;
+        }
+        #game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        #high-scores {
+            margin-top: 20px;
+            width: 400px;
+        }
+        .score-entry {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <h1>Snake Game</h1>
+        <canvas id="gameCanvas" width="400" height="400"></canvas>
+        <p>Score: <span id="score">0</span></p>
+        <button onclick="startGame()">Start Game</button>
+        <div id="high-scores">
+            <h2>High Scores</h2>
+            <div id="score-list"></div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreElement = document.getElementById('score');
+        const scoreListElement = document.getElementById('score-list');
+
+        const gridSize = 20;
+        const tileCount = 20;
+
+        let snake = [{x: 200, y: 200}];
+        let food = {};
+        let dx = gridSize;
+        let dy = 0;
+        let score = 0;
+        let gameInterval;
+        let myName = "Unknown";
+        let highScores = {};
+
+        MDS.init(function(msg){
+            if(msg.event === "inited"){
+                console.log("MiniDapp initialized");
+                getMaximaName();
+            } else if(msg.event === "MAXIMA"){
+                if(msg.data.application === "SnakeGame"){
+                    let scoreData = JSON.parse(hexToString(msg.data.data));
+                    updateHighScore(scoreData.name, scoreData.score);
+                }
+            }
+        });
+
+        function getMaximaName() {
+            MDS.cmd("maxima", function(res){
+                if(res.status){
+                    myName = res.response.name;
+                    console.log("My name:", myName);
+                }
+            });
+        }
+
+        function startGame() {
+            snake = [{x: 200, y: 200}];
+            score = 0;
+            scoreElement.textContent = score;
+            placeFood();
+            clearInterval(gameInterval);
+            gameInterval = setInterval(gameLoop, 100);
+        }
+
+        function placeFood() {
+            food = {
+                x: Math.floor(Math.random() * tileCount) * gridSize,
+                y: Math.floor(Math.random() * tileCount) * gridSize
+            };
+        }
+
+        function drawSnake() {
+            ctx.fillStyle = 'green';
+            snake.forEach(segment => {
+                ctx.fillRect(segment.x, segment.y, gridSize, gridSize);
+            });
+        }
+
+        function drawFood() {
+            ctx.fillStyle = 'red';
+            ctx.fillRect(food.x, food.y, gridSize, gridSize);
+        }
+
+        function moveSnake() {
+            const head = {x: snake[0].x + dx, y: snake[0].y + dy};
+            snake.unshift(head);
+            if (head.x === food.x && head.y === food.y) {
+                score++;
+                scoreElement.textContent = score;
+                placeFood();
+            } else {
+                snake.pop();
+            }
+        }
+
+        function gameLoop() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawFood();
+            moveSnake();
+            drawSnake();
+            checkCollision();
+        }
+
+        function checkCollision() {
+            const head = snake[0];
+            if (head.x < 0 || head.x >= canvas.width || head.y < 0 || head.y >= canvas.height) {
+                gameOver();
+            }
+            for (let i = 1; i < snake.length; i++) {
+                if (head.x === snake[i].x && head.y === snake[i].y) {
+                    gameOver();
+                }
+            }
+        }
+
+        function gameOver() {
+            clearInterval(gameInterval);
+            alert(`Game Over! Your score: ${score}`);
+            updateHighScore(myName, score);
+            broadcastScore();
+        }
+
+        function updateHighScore(name, newScore) {
+            if (!highScores[name] || newScore > highScores[name]) {
+                highScores[name] = newScore;
+                updateScoreDisplay();
+            }
+        }
+
+        function updateScoreDisplay() {
+            let sortedScores = Object.entries(highScores).sort((a, b) => b[1] - a[1]);
+            scoreListElement.innerHTML = '';
+            sortedScores.forEach(([name, score]) => {
+                let scoreEntry = document.createElement('div');
+                scoreEntry.className = 'score-entry';
+                scoreEntry.innerHTML = `<span>${name}</span><span>${score}</span>`;
+                scoreListElement.appendChild(scoreEntry);
+            });
+        }
+
+        function broadcastScore() {
+            let scoreData = JSON.stringify({name: myName, score: score});
+            MDS.cmd(`maxima action:sendall application:SnakeGame data:${stringToHex(scoreData)}`, function(res){
+                if(res.status){
+                    console.log("Score broadcasted successfully");
+                } else {
+                    console.error("Failed to broadcast score:", res.error);
+                }
+            });
+        }
+
+        function hexToString(hex) {
+            hex = hex.startsWith('0x') ? hex.slice(2) : hex;
+            let str = '';
+            for (let i = 0; i < hex.length; i += 2) {
+                str += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
+            }
+            return str;
+        }
+
+        function stringToHex(str) {
+            return '0x' + str.split('').map(c => c.charCodeAt(0).toString(16).padStart(2, '0')).join('');
+        }
+
+        document.addEventListener('keydown', (e) => {
+            switch(e.key) {
+                case 'ArrowUp':
+                    if (dy === 0) { dx = 0; dy = -gridSize; }
+                    break;
+                case 'ArrowDown':
+                    if (dy === 0) { dx = 0; dy = gridSize; }
+                    break;
+                case 'ArrowLeft':
+                    if (dx === 0) { dx = -gridSize; dy = 0; }
+                    break;
+                case 'ArrowRight':
+                    if (dx === 0) { dx = gridSize; dy = 0; }
+                    break;
+            }
+        });
+    </script>
+</body>
+</html>
