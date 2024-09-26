@@ -1,3 +1,6 @@
+<!-- devbot
+@monthrie -->
+
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -14,32 +17,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/components/prism-python.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>
     <link rel="stylesheet" href="styles.css">
-    <style>
-      /* ... existing styles ... */
-      .saved-files-sidebar {
-        position: fixed;
-        top: 60px;
-        right: 0;
-        width: 200px;
-        height: calc(100% - 60px);
-        background-color: #f0f0f0;
-        padding: 10px;
-        overflow-y: auto;
-        display: none;
-      }
-      .saved-files-sidebar h3 {
-        margin-top: 0;
-      }
-      .saved-files-sidebar ul {
-        list-style-type: none;
-        padding: 0;
-      }
-      .saved-files-sidebar li {
-        margin-bottom: 5px;
-        cursor: pointer;
-      }
-    </style>
   </head>
+
   <body>
     <div class="title-banner">
       <h1 class="title">DevBot v0.2.1 [MINIMA]</h1>
@@ -900,11 +879,6 @@
 
       // Add event listener for the 'Save to Session' button
       document.getElementById("save-to-session").addEventListener("click", saveToSession);
-      document.body.addEventListener('click', function(event) {
-        if (event.target && event.target.id === 'save-to-session') {
-          saveToSession();
-        }
-      });
 
       document.addEventListener('DOMContentLoaded', loadSavedFiles);
     </script>
