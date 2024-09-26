@@ -1,0 +1,38 @@
+<h2>Welcome to MiniDevBot</h2>
+<p>
+  MiniDevBot is your AI-powered assistant for Minima blockchain development, helping you create and understand minidapps.
+</p>
+
+<h3>Key Features:</h3>
+<ul>
+  <li>Generate code snippets, full minidapps, and complete files</li>
+  <li>Compile and download generated minidapps</li>
+  <li>Assist with Minima-specific development questions</li>
+</ul>
+
+<h3>How to Use:</h3>
+<ul>
+  <li>One-shot queries: Each question stands alone</li>
+  <li>Be specific: Clearly state what you need (e.g., a plan, code snippet, full minidapp, explanation of a concept or a command etc.)</li>
+  <li>For complex tasks, break them down into smaller steps</li>
+  <li>Include relevant parts of previous answers in follow-up questions</li>
+</ul>
+
+<h3>Limitations:</h3>
+<ul>
+  <li>Operates on a one-query, one-answer basis</li>
+  <li>May struggle with highly complex minidapps</li>
+  <li>Outputs single-page index.html files for minidapps</li>
+  <li>Accuracy may vary, especially for complex tasks</li>
+</ul>
+
+<h3>Best Practices:</h3>
+<ul>
+  <li>Always verify and test generated code</li>
+  <li>Use a test network in write mode for bot-made minidapps</li>
+  <li>Use read-only mode when on mainnet</li>
+  <li>Your queries are not private. Don't input sensitive information (e.g., security keys, API keys)</li>
+  <li>Combine MiniDevBot's Minima knowledge with other AI tools for comprehensive solutions</li>
+</ul>
+
+<p>Happy coding with MiniDevBot!</p>
