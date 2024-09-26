@@ -1,3 +1,6 @@
+<!-- devbot
+@monthrie -->
+
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -14,8 +17,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/components/prism-python.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>
     <link rel="stylesheet" href="styles.css">
-    
   </head>
+
   <body>
     <div class="title-banner">
       <h1 class="title">DevBot v0.2.1 [MINIMA]</h1>
@@ -159,7 +162,13 @@
         <button onclick="compileDIYCode()" class="compile-modal-button">
           Compile MiniDapp
         </button>
+        <button id="save-to-session" class="compile-modal-button">Save to Session</button>
       </div>
+    </div>
+
+    <div id="saved-files-sidebar" class="saved-files-sidebar">
+      <h3>Saved Files</h3>
+      <ul id="saved-files-list"></ul>
     </div>
 
     <script type="text/plain" id="mdsJsContent">
@@ -224,6 +233,7 @@
       MDS.init(function (msg) {
         if (msg.event === "inited") {
           console.log("MDS initialized");
+          initDatabase();
 
           // Create the chatbot_responses table if it doesn't exist
           MDS.sql(
@@ -792,6 +802,85 @@
       function closeDIYCompileModal() {
         document.getElementById("diyCompileModal").style.display = "none";
       }
+
+      function initDatabase() {
+        MDS.sql(
+          "CREATE TABLE IF NOT EXISTS saved_files (id INTEGER PRIMARY KEY AUTO_INCREMENT, name TEXT, content TEXT)",
+          function(res) {
+            if (res.status) {
+              console.log("Table 'saved_files' created successfully");
+              loadSavedFiles();
+            } else {
+              console.error("Error creating table:", res.error);
+            }
+          }
+        );
+      }
+
+      function saveToSession() {
+        const diyCompileInput = document.getElementById("diyCompileInput");
+        const content = diyCompileInput.value;
+        if (!content) {
+          alert("Please enter some content before saving.");
+          return;
+        }
+
+        const name = prompt("Enter a name for this file:");
+        if (!name) return;
+
+        const sqlQuery = `INSERT INTO saved_files (name, content) VALUES ('${name.replace(/'/g, "''")}', '${content.replace(/'/g, "''")}')`; // Added this line
+        console.log("Executing SQL query:", sqlQuery); // Added this line
+
+        MDS.sql(sqlQuery, function(res) {
+          console.log("SQL insert result:", res);
+          if (res.status) {
+            console.log("File saved successfully");
+            loadSavedFiles();
+            showNotification("File saved successfully!", "success");
+          } else {
+            console.error("Error saving file:", res.error);
+            showNotification("Error saving file", "error");
+          }
+        });
+      }
+
+      function loadSavedFiles() {
+        MDS.sql("SELECT id, name FROM saved_files ORDER BY id DESC", function(res) {
+          if (res.status) {
+            console.log("Received saved files data:", res.rows);
+            const filesList = document.getElementById("saved-files-list");
+            filesList.innerHTML = "";
+            res.rows.forEach(function(row) {
+              console.log("Processing row:", JSON.stringify(row)); // Changed this line
+              const li = document.createElement("li");
+              li.textContent = row.NAME || row.name || "Unnamed file"; // Changed this line
+              li.onclick = function() { loadFile(row.ID || row.id); };
+              filesList.appendChild(li);
+              console.log("Added list item:", li.textContent);
+            });
+            document.getElementById("saved-files-sidebar").style.display = "block";
+          } else {
+            console.error("Error loading saved files:", res.error);
+          }
+        });
+      }
+
+      function loadFile(id) {
+        MDS.sql(`SELECT content FROM saved_files WHERE id = ${id}`, function(res) {
+          if (res.status && res.rows.length > 0) {
+            document.getElementById("diyCompileInput").value = res.rows[0].content;
+            showNotification("File loaded successfully!", "success");
+          } else {
+            console.error("Error loading file:", res.error);
+            showNotification("Error loading file", "error");
+          }
+        });
+      }
+
+      // Add event listener for the 'Save to Session' button
+      document.getElementById("save-to-session").addEventListener("click", saveToSession);
+
+      document.addEventListener('DOMContentLoaded', loadSavedFiles);
     </script>
   </body>
 </html>

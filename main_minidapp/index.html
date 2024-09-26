@@ -865,17 +865,21 @@
         });
       }
 
-      function loadFile(id) {
-        MDS.sql(`SELECT content FROM saved_files WHERE id = ${id}`, function(res) {
-          if (res.status && res.rows.length > 0) {
-            document.getElementById("diyCompileInput").value = res.rows[0].content;
-            showNotification("File loaded successfully!", "success");
-          } else {
-            console.error("Error loading file:", res.error);
-            showNotification("Error loading file", "error");
-          }
-        });
-      }
+      function copyFile(id) {
+      MDS.sql(`SELECT content FROM saved_files WHERE id = ${id}`, function(res) {
+        if (res.status && res.rows.length > 0) {
+          navigator.clipboard.writeText(res.rows[0].content).then(function() {
+            showNotification("File copied to clipboard!", "success");
+          }, function(err) {
+            console.error("Error copying to clipboard:", err);
+            showNotification("Error copying to clipboard", "error");
+          });
+        } else {
+          console.error("Error retrieving file:", res.error);
+          showNotification("Error retrieving file", "error");
+        }
+      });
+    }
 
       // Add event listener for the 'Save to Session' button
       document.getElementById("save-to-session").addEventListener("click", saveToSession);
