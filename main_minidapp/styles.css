@@ -1,7 +1,7 @@
 
       :root {
-        --background: #0a0f1c;
-        --background2: #0f172a;
+        --background: #0f172a;  /* Darker color for sidebar */
+        --background2: #1e293b; /* Lighter color for main area */
         --foreground: #e2e8f0;
         --primary: #3b82f6;
         --secondary: #64748b;
@@ -20,7 +20,7 @@
         font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
           Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue",
           sans-serif;
-        background-color: var(--background);
+        background-color: var(--background2); /* Changed to lighter background */
         color: var(--foreground);
         line-height: 1.6;
         display: flex;
@@ -35,7 +35,7 @@
         justify-content: space-between;
         align-items: center;
         padding: 18px 25px;
-        background-color: var(--background2);
+        background-color: var(--background); /* Changed to darker background */
         text-align: center;
         z-index: 1000;
         height: 60px; /* Added fixed height */
@@ -81,7 +81,7 @@
       }
 
       .chat-message {
-        background-color: rgba(100, 116, 139, 0.1);
+        background-color: rgba(255, 255, 255, 0.05); /* Slightly lighter for contrast */
         padding: 12px 16px;
         border-radius: 12px;
         margin: 10px 0;
@@ -97,14 +97,14 @@
       }
 
       .chat-message.user {
-        background-color: rgba(59, 130, 246, 0.1);
+        background-color: rgba(59, 130, 246, 0.15); /* Slightly more opaque */
         color: var(--foreground);
         align-self: flex-end;
         margin-left: auto;
       }
 
       .chat-message.bot {
-        background-color: rgba(100, 116, 139, 0.1);
+        background-color: rgba(100, 116, 139, 0.15); /* Slightly more opaque */
         color: var(--foreground);
         align-self: flex-start;
       }
@@ -113,7 +113,7 @@
         display: flex;
         flex-direction: column;
         padding: 20px;
-        background-color: var(--background2);
+        background-color: var(--background); /* Changed to darker background */
         backdrop-filter: blur(10px);
         border-top: 1px solid rgba(255, 255, 255, 0.1);
         position: fixed;
@@ -727,7 +727,7 @@
         width: 200px;
         height: auto;
         max-height: calc(100vh - 60px);
-        background-color: var(--background2);
+        background-color: var(--background); /* Changed to darker background */
         transition: right 0.3s ease-in-out;
         border-radius: 10px 0 0 10px;
         z-index: 1000;
@@ -797,7 +797,7 @@
         width: 200px;
         bottom: 88px;
         background-color: var(--background2);
-        padding: 10px;
+        padding: 20px;
         overflow-y: auto;
         display: none;
         z-index: 999;
@@ -806,7 +806,9 @@
 
       .saved-files-sidebar h3 {
         margin-top: 0;
+        margin-bottom: 15px;
         color: var(--foreground);
+        font-size: 1.2rem;
       }
 
       .saved-files-sidebar ul {
@@ -815,14 +817,75 @@
       }
 
       .saved-files-sidebar li {
-        margin-bottom: 5px;
+        margin-bottom: 12px;
+        padding: 8px 12px;
         cursor: pointer;
         color: var(--foreground);
-        transition: color 0.3s ease;
+        transition: all 0.3s ease;
+        background-color: rgba(255, 255, 255, 0.05);
+        border-radius: 6px;
       }
 
       .saved-files-sidebar li:hover {
         color: var(--primary);
+        background-color: rgba(255, 255, 255, 0.1);
+        transform: translateX(5px);
+      }
+
+      /* Adjust for smaller screens */
+      @media (max-width: 768px) {
+        .chat-container {
+          margin-left: 0;
+        }
+
+        .saved-files-sidebar {
+          width: 100%;
+          top: auto;
+          bottom: 88px;
+          height: 200px;
+        }
+      }
+
+      .saved-files-sidebar {
+        position: fixed;
+        top: 60px;
+        left: 0;
+        width: 200px;
+        bottom: 88px;
+        background-color: var(--background2);
+        padding: 20px;
+        overflow-y: auto;
+        display: none;
+        z-index: 999;
+        border-right: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .saved-files-sidebar h3 {
+        margin-top: 0;
+        margin-bottom: 15px;
+        color: var(--foreground);
+        font-size: 1.2rem;
+      }
+
+      .saved-files-sidebar ul {
+        list-style-type: none;
+        padding: 0;
+      }
+
+      .saved-files-sidebar li {
+        margin-bottom: 12px;
+        padding: 8px 12px;
+        cursor: pointer;
+        color: var(--foreground);
+        transition: all 0.3s ease;
+        background-color: rgba(255, 255, 255, 0.05);
+        border-radius: 6px;
+      }
+
+      .saved-files-sidebar li:hover {
+        color: var(--primary);
+        background-color: rgba(255, 255, 255, 0.1);
+        transform: translateX(5px);
       }
 
       /* Adjust for smaller screens */
