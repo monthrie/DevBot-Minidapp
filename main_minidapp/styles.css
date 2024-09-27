@@ -77,7 +77,7 @@
         padding: 80px 20px 20px;
         scroll-behavior: smooth;
         padding-top: 60px;
-        margin-right: 200px; /* Add space for the sidebar */
+        margin-left: 200px; /* Changed from margin-right to margin-left */
       }
 
       .chat-message {
@@ -793,15 +793,15 @@
       .saved-files-sidebar {
         position: fixed;
         top: 60px;
-        right: 0;
+        left: 0;
         width: 200px;
-        bottom: 88px; /* Adjusted to match the height of your input container */
+        bottom: 88px;
         background-color: var(--background2);
         padding: 10px;
         overflow-y: auto;
         display: none;
-        z-index: 999; /* Just below the input container */
-        border-left: 1px solid rgba(255, 255, 255, 0.1);
+        z-index: 999;
+        border-right: 1px solid rgba(255, 255, 255, 0.1);
       }
 
       .saved-files-sidebar h3 {
@@ -828,13 +828,13 @@
       /* Adjust for smaller screens */
       @media (max-width: 768px) {
         .chat-container {
-          margin-right: 0;
+          margin-left: 0;
         }
 
         .saved-files-sidebar {
           width: 100%;
           top: auto;
-          bottom: 88px; /* Adjust based on your input container height */
-          height: 200px; /* Or any appropriate height for mobile */
+          bottom: 88px;
+          height: 200px;
         }
       }
