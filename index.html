@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>MiniDevBot</title>
+    <link rel="stylesheet" href="style.css" />
     <script type="text/javascript" src="mds.js"></script>
     <link rel="icon" type="image/png" href="brain.png" />
     <link
@@ -13,7 +14,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/prism.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/components/prism-python.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>
-    <link rel="stylesheet" href="style.css" />
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.0/codemirror.min.css"
@@ -28,12 +28,20 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.0/theme/dracula.min.css"
     />
     <!-- Font Awesome CSS ekleyin -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
   </head>
   <body>
     <div class="title-banner">
-      <h1 class="title">MiniDevBot v3.5 with <span class="preview-title">Preview</span></h1>
+      <h1 class="title">
+        MiniDevBot v3.5 with <span class="preview-title">Preview</span>
+      </h1>
       <div class="top-buttons">
+        <button id="toggle-file-explorer" onclick="toggleFileExplorer()">
+          <i class="fas fa-folder"></i>
+        </button>
         <button id="toggle-side-panel" onclick="toggleSidePanel()">
           <i class="fas fa-code"></i>
         </button>
@@ -57,6 +65,23 @@
       <li onclick="showSettings()">Settings</li>
     </ul>
 
+    <div class="left-sidebar" id="fileExplorer">
+      <h2>File Explorer</h2>
+      <div id="fileList"></div>
+      <div class="file-buttons">
+        <button id="newFileBtn" onclick="createNewFile()">New File</button>
+        <button id="importFileBtn" onclick="showImportFilesModal()">
+          Import File
+        </button>
+      </div>
+      <button
+        id="compileAllBtn"
+        class="compile-all-btn"
+        onclick="compileDIYCode()"
+      >
+        <i class="fas fa-cube"></i> Make MiniDapp
+      </button>
+    </div>
     <div class="main-content">
       <div class="chat-container" id="chat-body">
         <!-- Messages will be inserted here by JavaScript -->
@@ -66,23 +91,37 @@
           Thinking... may take up to 20 seconds...
         </div>
         <div class="input-row">
-            <textarea class="chat-input" id="chat-input" rows="1" placeholder="Type your message here..."></textarea>
-            <button class="send-button" onclick="sendMessage()">
-              <i class="fas fa-arrow-up"></i>
-            </button>
+          <textarea
+            onkeydown="if(event.key === 'Enter' && !event.shiftKey) {event.preventDefault(); sendMessage();}"
+            class="chat-input"
+            id="chat-input"
+            rows="1"
+            placeholder="Message MiniDevBot..."
+          ></textarea>
+          <button class="send-button" onclick="sendMessage()">
+            <i class="fas fa-arrow-up"></i>
+          </button>
         </div>
       </div>
     </div>
 
     <div class="side-panel" id="sidePanel">
       <div class="code-header">
-        <span>HTML</span>
+        <span id="currentFileName">No file selected</span>
         <div class="code-header-buttons">
-          <button onclick="copyCodeFromEditor()" class="copy-code-button">
-            <i class="fas fa-copy"></i>
+          <button
+            id="copyEditorContentBtn"
+            class="header-button"
+            onclick="copyCodeFromEditor()"
+          >
+            <i class="fas fa-copy"></i> Copy
           </button>
-          <button onclick="compileDIYCode()" class="compile-button">
-            Compile MiniDapp
+          <button
+            id="saveAsBtn"
+            class="header-button"
+            onclick="saveAsNewFile()"
+          >
+            <i class="fas fa-save"></i> Save As
           </button>
           <div class="toggle-container" id="viewToggle">
             <div class="toggle-switch"></div>
@@ -107,22 +146,38 @@
         <span class="close">&times;</span>
         <h2 class="info-title">Welcome to MiniDevBot</h2>
         <p class="info-description">
-          MiniDevBot is your AI-powered development assistant on the Minima blockchain.
+          MiniDevBot is your AI-powered development assistant on the Minima
+          blockchain.
         </p>
         <div class="info-section">
           <h3>How it works:</h3>
           <ul>
-            <li>This bot is free to use - but each query costs around $0.12 to run - consider donating to keep the service running.</li>
-            <li>You can ask almost anything... at the moment it struggles with the building of entire complex minidapps, but finds simple minidapps pretty easy.</li>
-            <li>You can also ask it to compile your minidapp and download it (this only works when it's given you an entire index.html file).</li>
+            <li>
+              This bot is free to use - but each query costs around $0.12 to run
+              - consider donating to keep the service running.
+            </li>
+            <li>
+              You can ask almost anything... at the moment it struggles with the
+              building of entire complex minidapps, but finds simple minidapps
+              pretty easy.
+            </li>
+            <li>
+              You can also ask it to compile your minidapp and download it (this
+              only works when it's given you an entire index.html file).
+            </li>
           </ul>
         </div>
         <div class="info-section">
           <h3>Tips for best results:</h3>
           <ul>
-            <li>If you want a plan, ask for a plan, if you want a full minidapp, ask for a full minidapp.</li>
+            <li>
+              If you want a plan, ask for a plan, if you want a full minidapp,
+              ask for a full minidapp.
+            </li>
             <li>Use code snippets when discussing specific code issues.</li>
-            <li>Mark follow-up questions to maintain context in the conversation.</li>
+            <li>
+              Mark follow-up questions to maintain context in the conversation.
+            </li>
           </ul>
         </div>
         <p class="info-footer">Happy coding with MiniDevBot!</p>
@@ -152,7 +207,11 @@
             <button type="button" id="direct-install" class="btn-primary">
               Install on MiniHub
             </button>
-            <button type="button" id="download-boilerplate" class="btn-secondary">
+            <button
+              type="button"
+              id="download-boilerplate"
+              class="btn-secondary"
+            >
               Download MiniDapp ZIP
             </button>
           </div>
@@ -194,6 +253,16 @@
         </button>
       </div>
     </div>
+
+    <div id="importFilesModal" class="modal">
+      <div class="modal-content">
+        <span class="close" onclick="closeImportFilesModal()">&times;</span>
+        <h2>Import Files</h2>
+        <input type="file" id="fileInput" multiple />
+        <div id="importedFileList"></div>
+      </div>
+    </div>
+
     <script src="script.js"></script>
   </body>
 </html>

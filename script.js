@@ -1,3 +1,7 @@
+let currentFile = null;
+let files = {};
+let editor;
+
 document.addEventListener("DOMContentLoaded", function () {
   const chatInput = document.getElementById("chat-input");
   const customPlaceholder = document.getElementById("custom-placeholder");
@@ -146,17 +150,16 @@ function escapeHtml(unsafe) {
     .replace(/'/g, "&#039;");
 }
 
-function copyToClipboard(text) {
+function copyToClipboard(text, button) {
   navigator.clipboard.writeText(text).then(
     function () {
-      const copyButton = event.target.closest(".copy-button");
-      const copyText = copyButton.querySelector(".copy-text");
-      const originalText = copyText.textContent;
-      copyText.textContent = "Copied!";
-      setTimeout(() => {
-        copyText.textContent = originalText;
-      }, 2000);
-      showNotification("Copied to clipboard!", "success");
+      if (button) {
+        const originalHTML = button.innerHTML;
+        button.innerHTML = `<i class="fas fa-check"></i><span>Copied!</span>`;
+        setTimeout(() => {
+          button.innerHTML = originalHTML;
+        }, 2000);
+      }
     },
     function (err) {
       console.error("Could not copy text: ", err);
@@ -174,32 +177,37 @@ function displayMessage(sender, message, sources = []) {
   parts.forEach((part, index) => {
     if (part.startsWith("```") && part.endsWith("```")) {
       const codeContent = part.slice(3, -3).trim();
-      
+      const firstLine = codeContent.split("\n")[0].trim();
+      const language = firstLine.match(/^[a-zA-Z0-9]+$/)
+        ? firstLine
+        : "plaintext";
+      const code =
+        language === firstLine
+          ? codeContent.substring(firstLine.length).trim()
+          : codeContent;
+
       // Check if it's a complete HTML file and the sender is the bot
       if (sender === "bot" && isCompleteHtmlFile(codeContent)) {
         // Extract the title from the HTML
         const titleMatch = codeContent.match(/<title>(.*?)<\/title>/i);
         const dappName = titleMatch ? titleMatch[1] : "Generated MiniDapp";
+        unselectFile();
+        openSidePanelWithCode(code);
 
         // Create a small box with the dapp name and code icon
         const dappBox = document.createElement("div");
         dappBox.className = "dapp-name-box";
         dappBox.onclick = function () {
-          toggleSidePanel();
+          unselectFile();
+          openSidePanelWithCode(code);
         };
         dappBox.innerHTML = `
           <i class="fas fa-code"></i>
           <span>${dappName}</span>
         `;
         messageElement.appendChild(dappBox);
-
-        // Open the side panel and paste the code
-        openSidePanelWithCode(codeContent);
       } else {
         // Original code for displaying code blocks
-        const firstLine = codeContent.split("\n")[0].trim();
-        const language = firstLine.match(/^[a-zA-Z0-9]+$/) ? firstLine : "plaintext";
-        const code = language === firstLine ? codeContent.substring(firstLine.length).trim() : codeContent;
 
         const preElement = document.createElement("pre");
         preElement.className = `language-${language}`;
@@ -209,21 +217,35 @@ function displayMessage(sender, message, sources = []) {
         codeElement.textContent = code;
 
         const codeContainer = document.createElement("div");
-        codeContainer.className = "code-container";
+        codeContainer.className = "response-code-container";
+
+        const buttonContainer = document.createElement("div");
+        buttonContainer.className = "code-button-container";
 
         const copyButton = document.createElement("button");
         copyButton.className = "copy-button";
         copyButton.innerHTML = `
-              <svg class="copy-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>
-              </svg>
-              <span class="copy-text">Copy</span>
-            `;
+            <i class="fas fa-copy"></i>
+            <span>Copy</span>
+        `;
         copyButton.onclick = function () {
-          copyToClipboard(code);
+          copyToClipboard(code, copyButton);
         };
 
-        codeContainer.appendChild(copyButton);
+        const editButton = document.createElement("button");
+        editButton.className = "edit-button";
+        editButton.innerHTML = `
+            <i class="fas fa-edit"></i>
+            <span>Edit</span>
+        `;
+        editButton.onclick = function () {
+          unselectFile();
+          openSidePanelWithCode(code);
+        };
+
+        buttonContainer.appendChild(copyButton);
+        buttonContainer.appendChild(editButton);
+        codeContainer.appendChild(buttonContainer);
 
         // Check if the code is a complete HTML file
         if (isCompleteHtmlFile(code)) {
@@ -233,7 +255,7 @@ function displayMessage(sender, message, sources = []) {
           compileButton.onclick = function () {
             compileMiniDapp(code);
           };
-          codeContainer.appendChild(compileButton);
+          buttonContainer.appendChild(compileButton);
         }
 
         codeContainer.appendChild(preElement);
@@ -246,7 +268,8 @@ function displayMessage(sender, message, sources = []) {
       paragraphs.forEach((paragraph, pIndex) => {
         if (paragraph.trim()) {
           const p = document.createElement("p");
-          p.style.margin = pIndex === 0 && index === 0 ? "0 0 10px 0" : "10px 0";
+          p.style.margin =
+            pIndex === 0 && index === 0 ? "0 0 10px 0" : "10px 0";
           if (/^\d+\.\s/.test(paragraph)) {
             p.style.marginLeft = "20px";
           }
@@ -292,9 +315,20 @@ function displayMessage(sender, message, sources = []) {
   if (sender === "bot") {
     const copyButton = document.createElement("button");
     copyButton.className = "copy-response-button";
-    copyButton.innerHTML = '<i class="fas fa-copy"></i> Copy Response';
-    copyButton.onclick = function() {
-      copyToClipboard(message);
+    copyButton.innerHTML = '<i class="fas fa-copy"></i>';
+    copyButton.onclick = function () {
+      navigator.clipboard.writeText(message).then(
+        function () {
+          const originalIcon = copyButton.innerHTML;
+          copyButton.innerHTML = '<i class="fas fa-check"></i><span>Copied!</span>';
+          setTimeout(() => {
+            copyButton.innerHTML = originalIcon;
+          }, 2000);
+        },
+        function (err) {
+          console.error("Could not copy text: ", err);
+        }
+      );
     };
     messageElement.appendChild(copyButton);
   }
@@ -342,12 +376,23 @@ window.onclick = function (event) {
 function compileMiniDapp(codeContent) {
   const modal = document.getElementById("compile-modal");
   const span = modal.querySelector(".close");
-  const form = document.getElementById("compile-form");
   const nameInput = document.getElementById("dapp-name");
   const directInstallBtn = document.getElementById("direct-install");
   const downloadBoilerplateBtn = document.getElementById(
     "download-boilerplate"
   );
+
+  // Create the Import Files button
+  const importFilesBtn = document.createElement("button");
+  importFilesBtn.textContent = "Import Files";
+  importFilesBtn.type = "button"; // Explicitly set the type to "button"
+  importFilesBtn.onclick = function (event) {
+    event.preventDefault(); // Prevent default form submission
+    showImportFilesModal();
+  };
+
+  // Insert the Import Files button before the Direct Install button
+  directInstallBtn.parentNode.insertBefore(importFilesBtn, directInstallBtn);
 
   // Set a default name with timestamp
   nameInput.value = "MyMiniDapp_" + Date.now();
@@ -358,11 +403,15 @@ function compileMiniDapp(codeContent) {
 
   span.onclick = function () {
     modal.style.display = "none";
+    // Remove the Import Files button when closing the modal
+    importFilesBtn.remove();
   };
 
   window.onclick = function (event) {
     if (event.target == modal) {
       modal.style.display = "none";
+      // Remove the Import Files button when closing the modal
+      importFilesBtn.remove();
     }
   };
 
@@ -370,12 +419,16 @@ function compileMiniDapp(codeContent) {
     const dappDetails = getDappDetails();
     createAndInstallMiniDapp(codeContent, dappDetails);
     modal.style.display = "none";
+    // Remove the Import Files button after compilation
+    importFilesBtn.remove();
   };
 
   downloadBoilerplateBtn.onclick = function () {
     const dappDetails = getDappDetails();
     createAndDownloadMiniDapp(codeContent, dappDetails);
     modal.style.display = "none";
+    // Remove the Import Files button after compilation
+    importFilesBtn.remove();
   };
 }
 
@@ -387,34 +440,76 @@ function getDappDetails() {
   };
 }
 
-function createAndInstallMiniDapp(codeContent, dappDetails) {
+async function createAndInstallMiniDapp(codeContent, dappDetails) {
   const htmlContent = generateHtmlContent(codeContent, dappDetails.name);
   const dappConfContent = generateDappConf(dappDetails);
   const sanitizedName = sanitizeName(dappDetails.name);
 
-  const zip = new JSZip();
-  addFilesToZip(zip, htmlContent, dappConfContent, sanitizedName);
+  try {
+    const zip = new JSZip();
+    const folder = zip.folder(sanitizedName);
 
-  zip.generateAsync({ type: "blob" }).then(function (content) {
-    const reader = new FileReader();
-    reader.readAsArrayBuffer(content);
-    reader.onloadend = function () {
-      const arrayBuffer = reader.result;
-      const hexString = arrayBufferToHexString(arrayBuffer);
-      installMiniDapp(hexString, sanitizedName);
+    // Add all files to the folder
+    const files = {
+      "index.html": htmlContent,
+      ...importedFiles,
     };
-  });
+    
+    // Add each file to the zip folder
+    for (const [filename, content] of Object.entries(files)) {
+      folder.file(filename, content);
+    }
+
+    // Add dapp.conf
+    folder.file("dapp.conf", JSON.stringify(dappConfContent, null, 2));
+
+    try {
+      // Fetch and add mds.js
+      const response = await fetch("mds.js");
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const mdsJsContent = await response.text();
+      folder.file("mds.js", mdsJsContent);
+    } catch (error) {
+      console.error("Failed to load mds.js:", error);
+    }
+
+    // Generate zip content and convert to hex
+    const content = await zip.generateAsync({ type: "blob" });
+    const buffer = await content.arrayBuffer();
+    const hexString = Array.from(new Uint8Array(buffer))
+      .map(b => b.toString(16).padStart(2, "0"))
+      .join("");
+
+    // Install the MiniDapp
+    installMiniDapp(hexString, sanitizedName);
+
+  } catch (error) {
+    console.error("Error creating MiniDapp:", error);
+    showNotification("Failed to create MiniDapp: " + error.message, "error");
+  }
 }
 
-function createAndDownloadMiniDapp(codeContent, dappDetails) {
+async function createAndDownloadMiniDapp(codeContent, dappDetails) {
   const htmlContent = generateHtmlContent(codeContent, dappDetails.name);
   const dappConfContent = generateDappConf(dappDetails);
   const sanitizedName = sanitizeName(dappDetails.name);
 
   const zip = new JSZip();
-  addFilesToZip(zip, htmlContent, dappConfContent, sanitizedName);
+  const files = {
+    "index.html": htmlContent,
+    ...importedFiles,
+  };
 
-  zip.generateAsync({ type: "blob" }).then(function (content) {
+  try {
+    const updatedZip = await addFilesToZip(
+      zip,
+      files,
+      dappConfContent,
+      sanitizedName
+    );
+    const content = await updatedZip.generateAsync({ type: "blob" });
     const url = URL.createObjectURL(content);
     const link = document.createElement("a");
     link.href = url;
@@ -422,7 +517,11 @@ function createAndDownloadMiniDapp(codeContent, dappDetails) {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-  });
+    URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error("Error creating MiniDapp:", error);
+    showNotification("Failed to create MiniDapp", "error");
+  }
 }
 
 function generateHtmlContent(codeContent, dappName) {
@@ -463,11 +562,31 @@ function sanitizeName(name) {
   return name.replace(/[^a-z0-9]/gi, "_").toLowerCase();
 }
 
-function addFilesToZip(zip, htmlContent, dappConfContent, sanitizedName) {
-  zip.file("index.html", htmlContent);
-  zip.file("dapp.conf", JSON.stringify(dappConfContent, null, 2));
-  const mdsJsContent = document.getElementById("mdsJsContent").textContent;
-  zip.file("mds.js", mdsJsContent);
+async function addFilesToZip(zip, files, dappConfContent, sanitizedName) {
+  // Create a folder for the MiniDapp
+  const folder = zip.folder(sanitizedName);
+
+  // Add all files to the folder
+  for (const [filename, content] of Object.entries(files)) {
+    folder.file(filename, content);
+  }
+
+  // Add dapp.conf
+  folder.file("dapp.conf", JSON.stringify(dappConfContent, null, 2));
+
+  try {
+    // Fetch and add mds.js
+    const response = await fetch("mds.js");
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const mdsJsContent = await response.text();
+    folder.file("mds.js", mdsJsContent);
+  } catch (error) {
+    console.error("Failed to load mds.js:", error);
+  }
+
+  return zip;
 }
 
 function arrayBufferToHexString(arrayBuffer) {
@@ -588,34 +707,130 @@ function showDIYCompile() {
   document.getElementById("diyCompileModal").style.display = "flex";
 }
 
+/**
+ * Compiles the code from the editor into a MiniDapp
+ * Triggered when clicking "Make MiniDapp" button in the file explorer
+ */
 function compileDIYCode() {
-  const code = document.getElementById("diyCompileInput").value;
-  closeDIYCompileModal();
-  compileMiniDapp(code);
-  document.getElementById("diyCompileInput").value = "";
+  // Show the compile modal with details form
+  const modal = document.getElementById("compile-modal");
+  modal.style.display = "flex";
+
+  // Set up event listeners for the compile modal buttons
+  document.getElementById("direct-install").onclick = async function () {
+    const dappDetails = {
+      name: document.getElementById("dapp-name").value || "MyMiniDapp",
+      description:
+        document.getElementById("dapp-description").value ||
+        "A MiniDapp created with MiniDevBot",
+      version: document.getElementById("dapp-version").value || "0.1.0",
+    };
+
+    try {
+      const zip = new JSZip();
+
+      // Add all files from the file explorer to the zip
+      Object.keys(files).forEach((fileName) => {
+        zip.file(fileName, files[fileName]);
+      });
+
+      // Add dapp.conf configuration file
+      zip.file("dapp.conf", JSON.stringify(dappDetails, null, 2));
+
+      // Generate zip content as blob
+      const content = await zip.generateAsync({ type: "blob" });
+
+      // Convert to base64 for MDS installation
+      const reader = new FileReader();
+      reader.readAsDataURL(content);
+      reader.onloadend = function () {
+        const base64data = reader.result.split(",")[1];
+
+        // Install using MDS API
+        MDS.file.install(base64data, function (resp) {
+          if (resp.status) {
+            showNotification("MiniDapp installed successfully!", "success");
+          } else {
+            showNotification("Installation failed: " + resp.error, "error");
+          }
+        });
+      };
+    } catch (error) {
+      showNotification("Error creating MiniDapp: " + error.message, "error");
+    }
+
+    modal.style.display = "none";
+  };
+
+  // Handle download button click
+  document.getElementById("download-boilerplate").onclick = async function () {
+    const dappDetails = {
+      name: document.getElementById("dapp-name").value || "MyMiniDapp",
+      description:
+        document.getElementById("dapp-description").value ||
+        "A MiniDapp created with MiniDevBot",
+      version: document.getElementById("dapp-version").value || "0.1.0",
+    };
+
+    try {
+      const zip = new JSZip();
+
+      // Add all files from the file explorer
+      Object.keys(files).forEach((fileName) => {
+        zip.file(fileName, files[fileName]);
+      });
+
+      // Add dapp.conf
+      zip.file("dapp.conf", JSON.stringify(dappDetails, null, 2));
+
+      try {
+        // Fetch and add mds.js
+        const response = await fetch("mds.js");
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const mdsJsContent = await response.text();
+        zip.file("mds.js", mdsJsContent);
+      } catch (error) {
+        console.error("Failed to load mds.js:", error);
+      }
+
+      // Generate and trigger download of the zip file
+      const content = await zip.generateAsync({ type: "blob" });
+      const url = window.URL.createObjectURL(content);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${dappDetails.name}.zip`;
+      a.click();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      showNotification("Error creating MiniDapp: " + error.message, "error");
+    }
+
+    modal.style.display = "none";
+  };
+
+  // Close button functionality
+  const closeBtn = modal.querySelector(".close");
+  closeBtn.onclick = function () {
+    modal.style.display = "none";
+  };
+
+  // Click outside modal to close
+  window.onclick = function (event) {
+    if (event.target == modal) {
+      modal.style.display = "none";
+    }
+  };
 }
 
 function closeDIYCompileModal() {
   document.getElementById("diyCompileModal").style.display = "none";
 }
 
-function toggleSidePanel() {
-  const sidePanel = document.getElementById('sidePanel');
-  const toggleButton = document.getElementById('toggle-side-panel');
-  
-  sidePanel.classList.toggle('open');
-  toggleButton.classList.toggle('active');
-  
-  if (sidePanel.classList.contains('open')) {
-    mainContent.style.marginRight = '50%';
-  } else {
-    mainContent.style.marginRight = '0';
-  }
-}
-
 // Function to generate empty preview HTML
 function getEmptyPreviewHTML() {
-    return `
+  return `
         <html>
         <head>
             <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -652,106 +867,433 @@ function getEmptyPreviewHTML() {
 
 // Update toggleView function
 function toggleView() {
-    if (isCodeActive) {
-        codeView.style.display = "block";
-        preview.style.display = "none";
-    } else {
-        codeView.style.display = "none";
-        preview.style.display = "block";
-        const editorContent = editor.getValue().trim();
-        preview.srcdoc = editorContent === "" ? getEmptyPreviewHTML() : editorContent;
-    }
+  if (isCodeActive) {
+    codeView.style.display = "block";
+    preview.style.display = "none";
+  } else {
+    codeView.style.display = "none";
+    preview.style.display = "block";
+    const editorContent = editor.getValue().trim();
+    preview.srcdoc =
+      editorContent === "" ? getEmptyPreviewHTML() : editorContent;
+  }
 }
 
 // Initialize CodeMirror for the side panel
-let editor;
-document.addEventListener('DOMContentLoaded', (event) => {
-    editor = CodeMirror.fromTextArea(document.getElementById("diyCompileInput"), {
-        mode: "htmlmixed",
-        theme: "dracula",
-        lineNumbers: true,
-        autoCloseTags: true,
-        autoCloseBrackets: true,
-        matchBrackets: true,
-        indentUnit: 4,
-        tabSize: 4,
-        indentWithTabs: true,
-        lineWrapping: true
-    });
+document.addEventListener("DOMContentLoaded", (event) => {
+  editor = CodeMirror.fromTextArea(document.getElementById("diyCompileInput"), {
+    mode: "htmlmixed",
+    theme: "dracula",
+    lineNumbers: true,
+    autoCloseTags: true,
+    autoCloseBrackets: true,
+    matchBrackets: true,
+    indentUnit: 4,
+    tabSize: 4,
+    indentWithTabs: true,
+    lineWrapping: true,
+  });
 
-    editor.on("change", function() {
-        document.getElementById("diyCompileInput").value = editor.getValue();
-        if (!isCodeActive) {
-            const editorContent = editor.getValue().trim();
-            preview.srcdoc = editorContent === "" ? getEmptyPreviewHTML() : editorContent;
-        }
-    });
+  editor.on("change", function () {
+    document.getElementById("diyCompileInput").value = editor.getValue();
+    saveCurrentFile();
+  });
+
+  document
+    .getElementById("importFileBtn")
+    .addEventListener("click", importFile);
+  updateFileList();
 });
 
-const viewToggle = document.getElementById('viewToggle');
-const toggleSwitch = document.querySelector('.toggle-switch');
-const toggleOptions = document.querySelectorAll('.toggle-option');
+const viewToggle = document.getElementById("viewToggle");
+const toggleSwitch = document.querySelector(".toggle-switch");
+const toggleOptions = document.querySelectorAll(".toggle-option");
 const codeView = document.getElementById("code-view");
 const preview = document.getElementById("preview");
 
 let isCodeActive = true;
 
-toggleOptions.forEach(option => {
-    option.addEventListener('click', function() {
-        isCodeActive = this.dataset.view === 'code';
-        updateToggleState();
-    });
+toggleOptions.forEach((option) => {
+  option.addEventListener("click", function () {
+    isCodeActive = this.dataset.view === "code";
+    updateToggleState();
+  });
 });
 
 function updateToggleState() {
-    if (isCodeActive) {
-        toggleSwitch.style.transform = 'translateX(0)';
-        toggleOptions[0].classList.add('active');
-        toggleOptions[1].classList.remove('active');
-    } else {
-        toggleSwitch.style.transform = 'translateX(100%)';
-        toggleOptions[0].classList.remove('active');
-        toggleOptions[1].classList.add('active');
-    }
-    toggleView();
+  if (isCodeActive) {
+    toggleSwitch.style.transform = "translateX(0)";
+    toggleOptions[0].classList.add("active");
+    toggleOptions[1].classList.remove("active");
+  } else {
+    toggleSwitch.style.transform = "translateX(100%)";
+    toggleOptions[0].classList.remove("active");
+    toggleOptions[1].classList.add("active");
+  }
+  toggleView();
+}
+
+function toggleSidePanel() {
+  const sidePanel = document.getElementById("sidePanel");
+  const toggleButton = document.getElementById("toggle-side-panel");
+  const mainContent = document.querySelector(".main-content");
+
+  sidePanel.classList.toggle("open");
+  toggleButton.classList.toggle("active");
+
+  if (sidePanel.classList.contains("open")) {
+    mainContent.style.marginRight = "50%";
+  } else {
+    mainContent.style.marginRight = "0";
+  }
 }
 
 // New function to open the side panel and paste the code
 function openSidePanelWithCode(code) {
-  const sidePanel = document.getElementById('sidePanel');
-  const mainContent = document.querySelector('.main-content');
-  
-  // Open the side panel
-  sidePanel.classList.add('open');
-  mainContent.style.marginRight = '50%';
+  const sidePanel = document.getElementById("sidePanel");
+  const toggleButton = document.getElementById("toggle-side-panel");
+  const mainContent = document.querySelector(".main-content");
 
-  // Set the code in the CodeMirror editor
+  sidePanel.classList.add("open");
+  toggleButton.classList.add("active");
+  mainContent.style.marginRight = "50%";
+
   editor.setValue(code);
 
-  // Switch to the code view
   isCodeActive = true;
   updateToggleState();
 }
 
-// Add this function to copy text to clipboard
-function copyToClipboard(text, isCode) {
-  navigator.clipboard.writeText(text).then(function() {
-    if (isCode) {
-      showNotification("Code copied to clipboard!", "success");
-    } else {
-      showNotification("Response copied to clipboard!", "success");
-    }
-  }, function(err) {
-    if (isCode) {
-      showNotification("Failed to copy code", "error");
-    } else {
-      showNotification("Failed to copy response", "error");
-    }
-  });
-}
-
 function copyCodeFromEditor() {
   const code = editor.getValue();
-  copyToClipboard(code, true);
+  const copyButton = document.getElementById("copyEditorContentBtn");
+  copyToClipboard(code, copyButton);
 }
 
+let importedFiles = {};
+
+function showImportFilesModal(event) {
+  if (event) event.preventDefault(); // Prevent default action if an event is passed
+  document.getElementById("importFilesModal").style.display = "flex";
+}
+
+function closeImportFilesModal(event) {
+  if (event) event.preventDefault(); // Prevent default action if an event is passed
+  document.getElementById("importFilesModal").style.display = "none";
+}
+
+document
+  .getElementById("fileInput")
+  .addEventListener("change", function (event) {
+    const fileList = document.getElementById("fileList");
+    fileList.innerHTML = "";
+
+    for (let file of event.target.files) {
+      const listItem = document.createElement("div");
+      listItem.textContent = file.name;
+      fileList.appendChild(listItem);
+    }
+  });
+
+document
+  .getElementById("fileExplorer")
+  .addEventListener("dragover", function (event) {
+    event.preventDefault();
+  });
+
+document
+  .getElementById("fileExplorer")
+  .addEventListener("drop", function (event) {
+    event.preventDefault();
+    const files = event.dataTransfer.files;
+    const fileList = document.getElementById("fileList");
+    fileList.innerHTML = "";
+
+    for (let file of files) {
+      const listItem = document.createElement("div");
+      listItem.textContent = file.name;
+      fileList.appendChild(listItem);
+    }
+  });
+
+document.getElementById("compileButton").addEventListener("click", function () {
+  const codeContent = editor.getValue();
+  if (!codeContent.trim()) {
+    showNotification("Please enter some code before compiling.", "error");
+    return;
+  }
+
+  const dappDetails = getDappDetails();
+  createAndDownloadMiniDapp(codeContent, dappDetails);
+});
+
+/**
+ * File explorer functionality
+ */
+
+/**
+ * Creates a new file in the file explorer
+ * Triggered by "New File" button click
+ */
+function createNewFile() {
+  const fileName = prompt("Enter file name:");
+  if (fileName && !files[fileName]) {
+    // Add .txt extension if no extension provided
+    const finalFileName = fileName.includes(".") ? fileName : `${fileName}.txt`;
+    files[finalFileName] = "";
+    currentFile = finalFileName;
+    updateFileList();
+    selectFile(finalFileName);
+  } else if (files[fileName]) {
+    alert("File already exists!");
+  }
+}
+
+/**
+ * Imports files through file input
+ * Triggered by "Import File" button click
+ */
+function importFile() {
+  const input = document.createElement("input");
+  input.type = "file";
+  input.multiple = true;
+  input.onchange = (e) => {
+    for (const file of e.target.files) {
+      const reader = new FileReader();
+      reader.onload = (readerEvent) => {
+        files[file.name] = readerEvent.target.result;
+      };
+      reader.readAsText(file);
+    }
+    setTimeout(updateFileList, 100);
+  };
+  input.click();
+}
+
+/**
+ * Updates the file list in the file explorer
+ * Called after file operations
+ */
+function updateFileList() {
+  const fileList = document.getElementById("fileList");
+  fileList.innerHTML = "";
+  // Add click handler to the fileList div
+  fileList.onclick = handleFileExplorerClick;
+
+  Object.keys(files)
+    .sort()
+    .forEach((fileName) => {
+      const fileItem = document.createElement("div");
+      fileItem.className = "file-item";
+
+      const fileNameSpan = document.createElement("span");
+      fileNameSpan.textContent = fileName;
+      fileNameSpan.onclick = (e) => {
+        e.stopPropagation(); // Prevent click from bubbling to fileList
+        selectFile(fileName);
+      };
+      if (fileName === currentFile) {
+        fileItem.classList.add("active");
+      }
+
+      const deleteButton = document.createElement("button");
+      deleteButton.className = "delete-file-btn";
+      deleteButton.innerHTML = '<i class="fas fa-trash"></i>';
+      deleteButton.onclick = (e) => {
+        e.stopPropagation(); // Prevent click from bubbling to fileList
+        deleteFile(fileName);
+      };
+
+      fileItem.appendChild(fileNameSpan);
+      fileItem.appendChild(deleteButton);
+      fileList.appendChild(fileItem);
+    });
+}
+
+function deleteFile(fileName) {
+  if (confirm(`Are you sure you want to delete ${fileName}?`)) {
+    delete files[fileName];
+    if (currentFile === fileName) {
+      currentFile = null;
+      editor.setValue("");
+      document.getElementById("currentFileName").textContent =
+        "No file selected";
+    }
+    updateFileList();
+    showNotification(`Deleted ${fileName}`, "success");
+  }
+}
+
+/**
+ * Selects a file in the file explorer and loads it into the editor
+ * @param {string} fileName - Name of the file to select
+ */
+function selectFile(fileName) {
+  currentFile = fileName;
+  document.getElementById("currentFileName").textContent = fileName;
+
+  if (!editor) {
+    // Initialize CodeMirror if not already initialized
+    editor = CodeMirror(document.getElementById("code-view"), {
+      mode: getFileMode(fileName),
+      theme: "dracula",
+      lineNumbers: true,
+      autoCloseTags: true,
+      autoCloseBrackets: true,
+      matchBrackets: true,
+      indentUnit: 4,
+      tabSize: 4,
+      indentWithTabs: true,
+      lineWrapping: true,
+      readOnly: false,
+    });
+
+    // Auto-save on change
+    editor.on("change", function () {
+      if (currentFile) {
+        files[currentFile] = editor.getValue();
+        showNotification("Changes saved", "success");
+      }
+    });
+  } else {
+    // Update editor mode based on file type
+    editor.setOption("mode", getFileMode(fileName));
+  }
+
+  editor.setValue(files[fileName] || "");
+  editor.refresh();
+  editor.focus();
+
+  updateFileList();
+  openSidePanel();
+}
+
+/**
+ * Saves the current file content
+ * Called automatically on editor changes
+ */
+function saveCurrentFile() {
+  if (currentFile) {
+    files[currentFile] = editor.getValue();
+  }
+}
+
+/**
+ * Shows a notification message
+ * @param {string} message - Message to display
+ * @param {string} type - Type of notification (success/error)
+ */
+function showNotification(message, type) {
+  const notification = document.getElementById("notification");
+  notification.textContent = message;
+  notification.className = `notification ${type}`;
+  notification.style.display = "block";
+  setTimeout(() => {
+    notification.style.display = "none";
+  }, 3000);
+}
+
+/**
+ * Gets the appropriate CodeMirror mode for a file type
+ * @param {string} fileName - Name of the file
+ * @returns {string} CodeMirror mode name
+ */
+function getFileMode(fileName) {
+  const extension = fileName.split(".").pop().toLowerCase();
+  const modeMap = {
+    js: "javascript",
+    javascript: "javascript",
+    html: "htmlmixed",
+    htm: "htmlmixed",
+    css: "css",
+    py: "python",
+    python: "python",
+    json: "javascript",
+    md: "markdown",
+    markdown: "markdown",
+    xml: "xml",
+    svg: "xml",
+    txt: "text",
+    php: "php",
+    rb: "ruby",
+    ruby: "ruby",
+    java: "clike",
+    c: "clike",
+    cpp: "clike",
+    cs: "clike",
+    scala: "clike",
+    kt: "clike",
+  };
+  return modeMap[extension] || "text";
+}
+
+function saveAsNewFile() {
+  if (!editor) return;
+
+  const content = editor.getValue();
+  if (!content.trim()) {
+    showNotification("Cannot save empty file", "error");
+    return;
+  }
+
+  const fileName = prompt("Enter file name:");
+  if (!fileName) return;
+
+  // Add .txt extension if no extension provided
+  const finalFileName = fileName.includes(".") ? fileName : `${fileName}.txt`;
+
+  if (files[finalFileName]) {
+    if (
+      !confirm(
+        `File ${finalFileName} already exists. Do you want to overwrite it?`
+      )
+    ) {
+      return;
+    }
+  }
+
+  files[finalFileName] = content;
+  currentFile = finalFileName;
+  document.getElementById("currentFileName").textContent = finalFileName;
+  updateFileList();
+  showNotification(`Saved as ${finalFileName}`, "success");
+}
+
+// Add this function to handle clicks on empty areas
+function handleFileExplorerClick(event) {
+  // Check if the click was directly on the fileList div (empty area)
+  if (event.target.id === "fileList") {
+    unselectFile();
+  }
+}
+
+function unselectFile() {
+  currentFile = null;
+  editor.setValue("");
+  document.getElementById("currentFileName").textContent = "No file selected";
+  updateFileList();
+}
+
+function toggleFileExplorer() {
+  const fileExplorer = document.getElementById("fileExplorer");
+  const toggleButton = document.getElementById("toggle-file-explorer");
+  const mainContent = document.querySelector(".main-content");
+
+  fileExplorer.classList.toggle("open");
+  toggleButton.classList.toggle("active");
+  mainContent.classList.toggle("shifted");
+}
+
+// Add this to the existing window click event handler
+document.addEventListener("click", function (event) {
+  const fileExplorer = document.getElementById("fileExplorer");
+  const toggleButton = document.getElementById("toggle-file-explorer");
+
+  if (
+    !fileExplorer.contains(event.target) &&
+    !toggleButton.contains(event.target) &&
+    fileExplorer.classList.contains("open")
+  ) {
+    toggleFileExplorer();
+  }
+});
