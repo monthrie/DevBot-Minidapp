@@ -124,6 +124,20 @@ async function sendMessage() {
 
   document.getElementById("loading-message").style.display = "block";
 
+  const chatBody = document.getElementById("chat-body");
+  const messages = Array.from(chatBody.children);
+  const history = [];
+  
+  for (let i = 0; i < messages.length; i++) {
+    const messageEl = messages[i];
+    const isUser = messageEl.classList.contains("user");
+    const messageText = messageEl.textContent;
+    history.unshift({
+      sender: isUser ? "user" : "assistant",
+      content: messageText
+    });
+  }
+
   try {
     const response = await fetch(
       "https://devbot-api-production.up.railway.app/chat",
@@ -135,6 +149,7 @@ async function sendMessage() {
         },
         body: JSON.stringify({
           message: message,
+          history: history
         }),
       }
     );
