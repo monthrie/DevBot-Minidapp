@@ -1,6 +1,30 @@
 let currentFile = null;
 let files = {};
 let editor;
+let isResizing = false;
+let lastDownX = 0;
+// const mockResponse = `I apologize, but I'm currently experiencing connectivity issues. Here's what you can try:
+
+// 1. Check your internet connection
+// 2. Try refreshing the page
+// 3. Try your request again in a few moments
+
+// If the problem persists, you can:
+// - Check the browser console for specific error messages
+// - Try a different browser
+// - Contact support if the issue continues
+
+// In the meantime, here's a simple example of how to make an HTTP request:
+
+// \`\`\`javascript
+// async function makeRequest() {try {const response = await fetch('https://api.example.com/data');
+//         const data = await response.json();
+//         console.log(data);
+//     } catch (error) {
+//         console.error('Error:', error);
+//     }
+// }
+// \`\`\``;
 
 document.addEventListener("DOMContentLoaded", function () {
   const chatInput = document.getElementById("chat-input");
@@ -29,6 +53,8 @@ document.addEventListener("DOMContentLoaded", function () {
     .addEventListener("click", function () {
       document.getElementById("info-modal").style.display = "none";
     });
+
+  initResizeHandle();
 });
 
 // Initialize MDS
@@ -129,7 +155,7 @@ async function sendMessage() {
       });
     }
 
-    displayMessage("bot", data.answer, data.sources);
+    displayMessage("bot", data.answer, data.sources); //add data.sources when available
 
     // Store the response in the database
     storeChatbotResponse(data.answer);
@@ -320,7 +346,8 @@ function displayMessage(sender, message, sources = []) {
       navigator.clipboard.writeText(message).then(
         function () {
           const originalIcon = copyButton.innerHTML;
-          copyButton.innerHTML = '<i class="fas fa-check"></i><span>Copied!</span>';
+          copyButton.innerHTML =
+            '<i class="fas fa-check"></i><span>Copied!</span>';
           setTimeout(() => {
             copyButton.innerHTML = originalIcon;
           }, 2000);
@@ -440,51 +467,135 @@ function getDappDetails() {
   };
 }
 
-async function createAndInstallMiniDapp(codeContent, dappDetails) {
+function installMiniDapp(hexZipContent, dappName) {
+  console.log(`Starting installation for ${dappName}`);
+  console.log(`Hex content length: ${hexZipContent.length} characters`);
+
+  MDS.file.savebinary(dappName + ".mds.zip", hexZipContent, function (resp) {
+    console.log('Save binary response:', resp);
+    
+    if (resp.status) {
+      console.log(`ZIP file saved successfully for ${dappName}`);
+      
+      MDS.file.getpath(dappName + ".mds.zip", function (pathResp) {
+        console.log('Get path response:', pathResp);
+        
+        if (pathResp.status) {
+          const filePath = pathResp.response.getpath.path;
+          console.log(`File path obtained: ${filePath}`);
+          
+          const installCommand = "mds action:install file:" + filePath;
+          console.log(`Executing install command: ${installCommand}`);
+          
+          MDS.cmd(installCommand, function (installResp) {
+            console.log('Install command response:', installResp);
+            
+            if (installResp.status) {
+              showNotification("MiniDapp installed successfully!", "success");
+              console.log(`Installation successful for ${dappName}`);
+            } else {
+              const errorMsg = "Failed to install MiniDapp: " + installResp.error;
+              console.error(errorMsg);
+              showNotification(errorMsg, "error");
+            }
+            
+            // Cleanup
+            console.log(`Cleaning up temporary file: ${dappName}.mds.zip`);
+            MDS.file.delete(dappName + ".mds.zip", function (deleteResp) {
+              console.log('Delete file response:', deleteResp);
+            });
+          });
+        } else {
+          const errorMsg = "Failed to get file path: " + pathResp.error;
+          console.error(errorMsg);
+          showNotification(errorMsg, "error");
+        }
+      });
+    } else {
+      const errorMsg = "Failed to save zip file: " + resp.error;
+      console.error(errorMsg);
+      showNotification(errorMsg, "error");
+    }
+  });
+}
+
+function createAndInstallMiniDapp(codeContent, dappDetails) {
+  console.log('Starting MiniDapp creation process');
+  console.log('Dapp Details:', dappDetails);
+  
   const htmlContent = generateHtmlContent(codeContent, dappDetails.name);
   const dappConfContent = generateDappConf(dappDetails);
   const sanitizedName = sanitizeName(dappDetails.name);
 
+  console.log(`Sanitized name: ${sanitizedName}`);
+  console.log('Dapp configuration:', dappConfContent);
+
   try {
     const zip = new JSZip();
-    const folder = zip.folder(sanitizedName);
+    console.log(`Created ZIP folder: ${sanitizedName}`);
 
     // Add all files to the folder
     const files = {
       "index.html": htmlContent,
       ...importedFiles,
+      ...window.files,
     };
-    
+
+    console.log('Files to be included:', Object.keys(files));
+
     // Add each file to the zip folder
     for (const [filename, content] of Object.entries(files)) {
-      folder.file(filename, content);
+      zip.file(filename, content);
+      console.log(`Added file to ZIP: ${filename}`);
     }
 
     // Add dapp.conf
-    folder.file("dapp.conf", JSON.stringify(dappConfContent, null, 2));
+    zip.file("dapp.conf", JSON.stringify(dappConfContent, null, 2));
+    console.log('Added dapp.conf to ZIP');
 
-    try {
-      // Fetch and add mds.js
-      const response = await fetch("mds.js");
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const mdsJsContent = await response.text();
-      folder.file("mds.js", mdsJsContent);
-    } catch (error) {
-      console.error("Failed to load mds.js:", error);
-    }
+    // Add the icon file
+    fetch("devbot's minidapp.png")
+      .then(response => {
+        console.log('Icon fetch response:', response);
+        return response.blob();
+      })
+      .then(async blob => {
+        zip.file("devbot-minidapp.png", blob);
+        console.log('Added icon to ZIP');
 
-    // Generate zip content and convert to hex
-    const content = await zip.generateAsync({ type: "blob" });
-    const buffer = await content.arrayBuffer();
-    const hexString = Array.from(new Uint8Array(buffer))
-      .map(b => b.toString(16).padStart(2, "0"))
-      .join("");
+        try {
+          // Fetch and add mds.js
+          const response = await fetch("mds.js");
+          console.log('MDS.js fetch response:', response);
+          
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          const mdsJsContent = await response.text();
+          zip.file("mds.js", mdsJsContent);
+          console.log('Added mds.js to ZIP');
 
-    // Install the MiniDapp
-    installMiniDapp(hexString, sanitizedName);
+          // Generate zip content and convert to hex
+          console.log('Generating final ZIP content');
+          const content = await zip.generateAsync({ type: "blob" });
+          const buffer = await content.arrayBuffer();
+          const hexString = Array.from(new Uint8Array(buffer))
+            .map((b) => b.toString(16).padStart(2, "0"))
+            .join("");
+          console.log(`Generated hex string length: ${hexString.length}`);
 
+          // Install the MiniDapp
+          console.log('Initiating installation process');
+          installMiniDapp(hexString, sanitizedName);
+        } catch (error) {
+          console.error("Failed to load mds.js:", error);
+          showNotification("Failed to load mds.js: " + error.message, "error");
+        }
+      })
+      .catch(error => {
+        console.error("Error adding icon file:", error);
+        showNotification("Failed to add icon file: " + error.message, "error");
+      });
   } catch (error) {
     console.error("Error creating MiniDapp:", error);
     showNotification("Failed to create MiniDapp: " + error.message, "error");
@@ -500,6 +611,7 @@ async function createAndDownloadMiniDapp(codeContent, dappDetails) {
   const files = {
     "index.html": htmlContent,
     ...importedFiles,
+    ...window.files,
   };
 
   try {
@@ -551,7 +663,7 @@ function generateHtmlContent(codeContent, dappName) {
 function generateDappConf(dappDetails) {
   return {
     name: dappDetails.name,
-    icon: "brain.png",
+    icon: "devbot-minidapp.png",
     version: dappDetails.version,
     description: dappDetails.description || "Generated MiniDapp",
     browser: "internal",
@@ -563,27 +675,29 @@ function sanitizeName(name) {
 }
 
 async function addFilesToZip(zip, files, dappConfContent, sanitizedName) {
-  // Create a folder for the MiniDapp
-  const folder = zip.folder(sanitizedName);
-
-  // Add all files to the folder
+  // Add all files directly to the root of the zip
   for (const [filename, content] of Object.entries(files)) {
-    folder.file(filename, content);
+    zip.file(filename, content);
   }
 
-  // Add dapp.conf
-  folder.file("dapp.conf", JSON.stringify(dappConfContent, null, 2));
+  // Add dapp.conf to root
+  zip.file("dapp.conf", JSON.stringify(dappConfContent, null, 2));
 
   try {
-    // Fetch and add mds.js
+    // Add the icon file to root
+    const iconResponse = await fetch("devbot's minidapp.png");
+    const iconBlob = await iconResponse.blob();
+    zip.file("devbot-minidapp.png", iconBlob);
+
+    // Fetch and add mds.js to root
     const response = await fetch("mds.js");
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     const mdsJsContent = await response.text();
-    folder.file("mds.js", mdsJsContent);
+    zip.file("mds.js", mdsJsContent);
   } catch (error) {
-    console.error("Failed to load mds.js:", error);
+    console.error("Failed to load required files:", error);
   }
 
   return zip;
@@ -595,44 +709,14 @@ function arrayBufferToHexString(arrayBuffer) {
     .join("");
 }
 
-function installMiniDapp(hexZipContent, dappName) {
-  MDS.file.savebinary(dappName + ".mds.zip", hexZipContent, function (resp) {
-    if (resp.status) {
-      MDS.file.getpath(dappName + ".mds.zip", function (pathResp) {
-        if (pathResp.status) {
-          const filePath = pathResp.response.getpath.path;
-          const installCommand = "mds action:install file:" + filePath;
-          MDS.cmd(installCommand, function (installResp) {
-            if (installResp.status) {
-              showNotification("MiniDapp installed successfully!", "success");
-            } else {
-              showNotification(
-                "Failed to install MiniDapp: " + installResp.error,
-                "error"
-              );
-            }
-            MDS.file.delete(dappName + ".mds.zip", function () {});
-          });
-        } else {
-          showNotification(
-            "Failed to get file path: " + pathResp.error,
-            "error"
-          );
-        }
-      });
-    } else {
-      showNotification("Failed to save zip file: " + resp.error, "error");
-    }
-  });
-}
-
 function showNotification(message, type) {
   const notification = document.getElementById("notification");
   notification.textContent = message;
-  notification.className = "notification " + type + " show";
+  notification.classList.add(type);
+  notification.classList.add("show");
 
   setTimeout(() => {
-    notification.className = "notification " + type;
+    notification.classList.remove("show");
   }, 3000);
 }
 
@@ -718,95 +802,39 @@ function compileDIYCode() {
 
   // Set up event listeners for the compile modal buttons
   document.getElementById("direct-install").onclick = async function () {
-    const dappDetails = {
-      name: document.getElementById("dapp-name").value || "MyMiniDapp",
-      description:
-        document.getElementById("dapp-description").value ||
-        "A MiniDapp created with MiniDevBot",
-      version: document.getElementById("dapp-version").value || "0.1.0",
-    };
-
-    try {
-      const zip = new JSZip();
-
-      // Add all files from the file explorer to the zip
-      Object.keys(files).forEach((fileName) => {
-        zip.file(fileName, files[fileName]);
-      });
-
-      // Add dapp.conf configuration file
-      zip.file("dapp.conf", JSON.stringify(dappDetails, null, 2));
-
-      // Generate zip content as blob
-      const content = await zip.generateAsync({ type: "blob" });
-
-      // Convert to base64 for MDS installation
-      const reader = new FileReader();
-      reader.readAsDataURL(content);
-      reader.onloadend = function () {
-        const base64data = reader.result.split(",")[1];
-
-        // Install using MDS API
-        MDS.file.install(base64data, function (resp) {
-          if (resp.status) {
-            showNotification("MiniDapp installed successfully!", "success");
-          } else {
-            showNotification("Installation failed: " + resp.error, "error");
-          }
-        });
-      };
-    } catch (error) {
-      showNotification("Error creating MiniDapp: " + error.message, "error");
+    const dappDetails = getDappDetails();
+    
+    // Get the main HTML content from the current files
+    const mainHtmlFile = Object.entries(files).find(([name]) => 
+      name.toLowerCase() === "index.html" || name.toLowerCase().endsWith(".html")
+    );
+    
+    if (!mainHtmlFile) {
+      showNotification("No HTML file found in the project", "error");
+      return;
     }
 
+    const [_, htmlContent] = mainHtmlFile;
+    createAndInstallMiniDapp(htmlContent, dappDetails);
     modal.style.display = "none";
   };
 
   // Handle download button click
   document.getElementById("download-boilerplate").onclick = async function () {
-    const dappDetails = {
-      name: document.getElementById("dapp-name").value || "MyMiniDapp",
-      description:
-        document.getElementById("dapp-description").value ||
-        "A MiniDapp created with MiniDevBot",
-      version: document.getElementById("dapp-version").value || "0.1.0",
-    };
-
-    try {
-      const zip = new JSZip();
-
-      // Add all files from the file explorer
-      Object.keys(files).forEach((fileName) => {
-        zip.file(fileName, files[fileName]);
-      });
-
-      // Add dapp.conf
-      zip.file("dapp.conf", JSON.stringify(dappDetails, null, 2));
-
-      try {
-        // Fetch and add mds.js
-        const response = await fetch("mds.js");
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const mdsJsContent = await response.text();
-        zip.file("mds.js", mdsJsContent);
-      } catch (error) {
-        console.error("Failed to load mds.js:", error);
-      }
-
-      // Generate and trigger download of the zip file
-      const content = await zip.generateAsync({ type: "blob" });
-      const url = window.URL.createObjectURL(content);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `${dappDetails.name}.zip`;
-      a.click();
-      window.URL.revokeObjectURL(url);
-    } catch (error) {
-      showNotification("Error creating MiniDapp: " + error.message, "error");
+    const dappDetails = getDappDetails();
+    
+    // Get the main HTML content from the current files
+    const mainHtmlFile = Object.entries(files).find(([name]) => 
+      name.toLowerCase() === "index.html" || name.toLowerCase().endsWith(".html")
+    );
+    
+    if (!mainHtmlFile) {
+      showNotification("No HTML file found in the project", "error");
+      return;
     }
 
+    const [_, htmlContent] = mainHtmlFile;
+    createAndDownloadMiniDapp(htmlContent, dappDetails);
     modal.style.display = "none";
   };
 
@@ -934,31 +962,39 @@ function updateToggleState() {
 }
 
 function toggleSidePanel() {
-  const sidePanel = document.getElementById("sidePanel");
-  const toggleButton = document.getElementById("toggle-side-panel");
-  const mainContent = document.querySelector(".main-content");
+  const sidePanel = document.getElementById('sidePanel');
+  const toggleButton = document.getElementById('toggle-side-panel');
+  const mainContent = document.querySelector('.main-content');
 
-  sidePanel.classList.toggle("open");
-  toggleButton.classList.toggle("active");
-
-  if (sidePanel.classList.contains("open")) {
-    mainContent.style.marginRight = "50%";
+  sidePanel.classList.toggle('open');
+  toggleButton.classList.toggle('active');
+  
+  if (sidePanel.classList.contains('open')) {
+    const width = sidePanel.style.width || '50%';
+    mainContent.style.marginRight = width;
   } else {
-    mainContent.style.marginRight = "0";
+    mainContent.style.marginRight = '0';
   }
 }
 
 // New function to open the side panel and paste the code
 function openSidePanelWithCode(code) {
-  const sidePanel = document.getElementById("sidePanel");
-  const toggleButton = document.getElementById("toggle-side-panel");
-  const mainContent = document.querySelector(".main-content");
+  const sidePanel = document.getElementById('sidePanel');
+  const toggleButton = document.getElementById('toggle-side-panel');
+  const mainContent = document.querySelector('.main-content');
 
-  sidePanel.classList.add("open");
-  toggleButton.classList.add("active");
-  mainContent.style.marginRight = "50%";
+  sidePanel.classList.add('open');
+  toggleButton.classList.add('active');
+  
+  const width = sidePanel.style.width || '50%';
+  mainContent.style.marginRight = width;
+  sidePanel.style.width = width;
 
   editor.setValue(code);
+  
+  setTimeout(() => {
+    editor.refresh();
+  }, 10);
 
   isCodeActive = true;
   updateToggleState();
@@ -1156,16 +1192,15 @@ function selectFile(fileName) {
       }
     });
   } else {
-    // Update editor mode based on file type
+    // Update editor mode based on file type 
     editor.setOption("mode", getFileMode(fileName));
   }
 
-  editor.setValue(files[fileName] || "");
+  openSidePanelWithCode(files[fileName] || "");
   editor.refresh();
   editor.focus();
 
   updateFileList();
-  openSidePanel();
 }
 
 /**
@@ -1176,21 +1211,6 @@ function saveCurrentFile() {
   if (currentFile) {
     files[currentFile] = editor.getValue();
   }
-}
-
-/**
- * Shows a notification message
- * @param {string} message - Message to display
- * @param {string} type - Type of notification (success/error)
- */
-function showNotification(message, type) {
-  const notification = document.getElementById("notification");
-  notification.textContent = message;
-  notification.className = `notification ${type}`;
-  notification.style.display = "block";
-  setTimeout(() => {
-    notification.style.display = "none";
-  }, 3000);
 }
 
 /**
@@ -1297,3 +1317,66 @@ document.addEventListener("click", function (event) {
     toggleFileExplorer();
   }
 });
+
+function initResizeHandle() {
+  const resizeHandle = document.querySelector('.resize-handle');
+  const sidePanel = document.getElementById('sidePanel');
+  const mainContent = document.querySelector('.main-content');
+
+  resizeHandle.addEventListener('mousedown', function(e) {
+    isResizing = true;
+    lastDownX = e.clientX;
+    sidePanel.classList.add('resizing');
+    
+    // Add overlay to prevent iframe interference and set cursor
+    const overlay = document.createElement('div');
+    overlay.style.position = 'fixed';
+    overlay.style.top = '0';
+    overlay.style.left = '0';
+    overlay.style.right = '0';
+    overlay.style.bottom = '0';
+    overlay.style.zIndex = '9999';
+    overlay.style.cursor = 'col-resize'; // Add resize cursor to overlay
+    overlay.id = 'resize-overlay';
+    document.body.appendChild(overlay);
+    
+    // Set cursor on body as fallback
+    document.body.style.cursor = 'col-resize';
+  });
+
+  document.addEventListener('mousemove', function(e) {
+    if (!isResizing) return;
+
+    const delta = lastDownX - e.clientX;
+    lastDownX = e.clientX;
+
+    const newWidth = sidePanel.offsetWidth + delta;
+    
+    // Check minimum and maximum widths
+    if (newWidth >= 300 && newWidth <= window.innerWidth * 0.8) {
+      sidePanel.style.width = newWidth + 'px';
+      mainContent.style.marginRight = newWidth + 'px';
+    }
+  });
+
+  document.addEventListener('mouseup', function() {
+    if (isResizing) {
+      isResizing = false;
+      sidePanel.classList.remove('resizing');
+      
+      // Remove overlay
+      const overlay = document.getElementById('resize-overlay');
+      if (overlay) {
+        overlay.remove();
+      }
+      
+      // Reset cursor
+      document.body.style.cursor = '';
+      
+      // Refresh CodeMirror to prevent display issues
+      if (editor) {
+        editor.refresh();
+      }
+    }
+  });
+}

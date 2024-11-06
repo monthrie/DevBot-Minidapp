@@ -190,7 +190,7 @@ body {
   background-color: #b91c1c;
 }
 
-.button-common:hover, .edit-button:hover, .history-button:hover, .about-button:hover, .index-button:hover, .toggle-side-panel:hover {
+.button-common:hover, .history-button:hover, .about-button:hover, .index-button:hover, .toggle-side-panel:hover {
   background-color: #475569;
 }
 
@@ -214,7 +214,7 @@ body {
 /* Code Highlighting Styles */
 pre[class*="language-"] {
   margin: 16px 0;
-  padding: 16px;
+  padding: 40px 16px 16px 16px !important;
   overflow: auto;
   border-radius: 8px;
   background-color: #1e293b !important;
@@ -360,19 +360,24 @@ code[class*="language-"] {
 
 .code-button-container {
   display: flex;
+  justify-content: flex-end;
   position: absolute;
-  top: 8px;
-  right: 8px;
+  top: 0;
+  right: 0;
+  left: 0;
+  background-color: #1a1a1a;
+  border-radius: 8px 8px 0 0;
 }
 
 .code-button-container button {
   color: #888;
-  font-size: 0.9rem;
+  font-size: 0.8rem;
+  padding: 6px 10px;
+  transition: all 0.3s ease;
 }
 
 .code-button-container button:hover {
   color: white;
-  background-color: rgba(255, 255, 255, 0.1);
 }
 
 .edit-button {
@@ -381,10 +386,7 @@ code[class*="language-"] {
   gap: 5px;
   background-color: transparent;
   border: none;
-  padding: 5px 10px;
-  border-radius: 4px;
   cursor: pointer;
-  transition: all 0.3s ease;
 }
 
 /* Copy Button Styles */
@@ -394,10 +396,7 @@ code[class*="language-"] {
   gap: 5px;
   background-color: transparent;
   border: none;
-  border-radius: 4px;
-  padding: 6px 10px;
   cursor: pointer;
-  transition: background-color 0.3s ease;
 }
 
 /* Code Container Styles */
@@ -438,7 +437,7 @@ code[class*="language-"] {
 }
 
 /* Notification Styles */
-.notification {
+#notification {
   pointer-events: none;
   position: fixed;
   top: 20px;
@@ -452,15 +451,15 @@ code[class*="language-"] {
   z-index: 1000;
 }
 
-.notification.success {
+#notification.success {
   background-color: var(--success);
 }
 
-.notification.error {
+#notification.error {
   background-color: var(--error);
 }
 
-.notification.show {
+#notification.show {
   opacity: 1;
   pointer-events: auto;
 }
@@ -600,6 +599,16 @@ nav a:hover {
   height: calc(100vh - 60px);
   transition: margin-right 0.3s ease-in-out;
 }
+/* Add these styles to your style.css */
+.resize-handle {
+  position: absolute;
+  left: -2.5px;
+  top: 0;
+  bottom: 0;
+  width: 5px;
+  cursor: col-resize;
+  z-index: 1001;
+}
 
 /* Side Panel Styles */
 .side-panel {
@@ -609,16 +618,23 @@ nav a:hover {
   width: 50%;
   height: calc(100vh - 60px);
   background-color: var(--background2);
-  transition: right 0.3s ease-in-out;
+  transition: all 0.3s ease;
   z-index: 900;
   display: flex;
   flex-direction: column;
   box-shadow: -2px 0 5px rgba(0, 0, 0, 0.2);
   border-left: 1px solid var(--background);
+  min-width: 300px;
+  max-width: 80%;
 }
 
 .side-panel.open {
   right: 0;
+}
+
+.side-panel.resizing {
+  user-select: none;
+  transition: none;
 }
 
 /* Code Header Styles */
@@ -1167,7 +1183,7 @@ nav a:hover {
 
 /* Adjust main content for smooth transition */
 .main-content {
-  transition: margin 0.3s ease-in-out;
+  transition: margin-right 0.3s ease;
 }
 
 .main-content.shifted {
