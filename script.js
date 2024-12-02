@@ -102,7 +102,9 @@ async function sendMessage() {
   const messages = Array.from(chatBody.children);
   const history = [];
   
-  for (let i = 0; i < messages.length; i++) {
+  // Only process the last 10 messages
+  const messageCount = Math.min(messages.length, 8);
+  for (let i = 0; i < messageCount; i++) {
     const messageEl = messages[i];
     const isUser = messageEl.classList.contains("user");
     const messageText = messageEl.textContent;
@@ -122,8 +124,7 @@ async function sendMessage() {
           "Access-Control-Allow-Origin": "*",
         },
         body: JSON.stringify({
-          message: message,
-          history: history
+          messages: history
         }),
       }
     );
